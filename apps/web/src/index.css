@@ -1,0 +1,31 @@
+/* Global Styling & Google Fonts Import */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #F9F8F6;
+  font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Ensure inputs and buttons inherit active typography selection */
+input, button, select, textarea {
+  font-family: inherit;
+}
+
+/* Minor helper classes */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
