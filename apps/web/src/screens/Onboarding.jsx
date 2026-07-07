@@ -3,7 +3,10 @@
 import React, { useState } from "react";
 import { TOKENS } from "../tokens.js";
 import { apiFetch } from "../lib/api.js";
-import { Upload, ArrowRight, Check } from "lucide-react";
+import { t } from "../lib/copy.js";
+import { RangeBar } from "../components/RangeBar.jsx";
+import { Label } from "../components/Label.jsx";
+import { Upload, ArrowRight } from "lucide-react";
 
 export function Onboarding({ onCompleted }) {
   const [step, setStep] = useState(1);
@@ -337,7 +340,7 @@ export function Onboarding({ onCompleted }) {
             background: TOKENS.colors.bg,
             padding: "16px",
             borderRadius: TOKENS.borderRadius.input,
-            marginBottom: "32px",
+            marginBottom: "28px",
             textAlign: "center"
           }}>
             <div>
@@ -354,61 +357,78 @@ export function Onboarding({ onCompleted }) {
             </div>
           </div>
 
+          {/* Value-first report moment: show what a linked report unlocks */}
           <div style={{
-            border: `1px dashed ${TOKENS.colors.primary}`,
-            borderRadius: TOKENS.borderRadius.card,
-            padding: "24px",
-            textAlign: "center",
-            background: TOKENS.colors.primaryLight
+            background: TOKENS.gradients.hero,
+            borderRadius: TOKENS.borderRadius.lg,
+            padding: "22px",
+            boxShadow: TOKENS.shadows.hero,
+            color: TOKENS.colors.textInverse,
+            textAlign: "center"
           }}>
-            <h2 style={{ fontSize: "16px", fontWeight: 600, color: TOKENS.colors.primary, margin: "0 0 8px 0" }}>
-              Link a Health Report
+            <h2 style={{ fontFamily: TOKENS.fonts.assistant, fontSize: "20px", fontWeight: "normal", margin: "0 0 8px", color: TOKENS.colors.textInverse }}>
+              {t("onboarding.reportValueTitle")}
             </h2>
-            <p style={{ fontSize: "12px", color: TOKENS.colors.textMuted, margin: "0 0 20px 0", lineHeight: "1.4" }}>
-              Upload your latest bloodwork PDF or printout photo. Aarogya will scan your bloodwork and customize guidance to your body's gaps.
+            <p style={{ fontSize: "13px", color: TOKENS.colors.textInverseMuted, margin: "0 0 18px", lineHeight: 1.45 }}>
+              {t("onboarding.reportValueBody")}
             </p>
+
+            {/* Example marker card — clearly labelled as a preview, never presented as live */}
+            <div style={{ background: TOKENS.colors.surface, borderRadius: TOKENS.borderRadius.card, padding: "16px", textAlign: "left", color: TOKENS.colors.textDark }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <div style={{ fontWeight: 600, fontSize: "14px" }}>IRON</div>
+                <Label text="low gap" type="low" />
+              </div>
+              <RangeBar value={45} rangeLow={65} rangeHigh={175} unit="µg/dL" />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", borderTop: `1px solid ${TOKENS.colors.border}`, paddingTop: "10px" }}>
+                <Label text="food fixable" type="food_fixable" />
+                <span style={{ fontSize: "10px", color: TOKENS.colors.textMuted }}>{t("onboarding.reportPreviewCaption")}</span>
+              </div>
+            </div>
 
             <label style={{
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              padding: "12px 20px",
-              background: TOKENS.colors.primary,
-              color: "#ffffff",
-              borderRadius: TOKENS.borderRadius.input,
+              marginTop: "18px",
+              padding: "13px 24px",
+              background: TOKENS.colors.accent,
+              color: TOKENS.colors.accentInk,
+              borderRadius: TOKENS.borderRadius.pill,
               cursor: isReportUploading ? "not-allowed" : "pointer",
               fontSize: "14px",
-              fontWeight: 600
+              fontWeight: 700
             }}>
               <Upload size={16} />
-              {isReportUploading ? "Reading..." : "Upload Report"}
-              <input 
-                type="file" 
-                accept="application/pdf,image/*" 
-                style={{ display: "none" }} 
+              {isReportUploading ? "Reading..." : "Upload my report"}
+              <input
+                type="file"
+                accept="application/pdf,image/*"
+                style={{ display: "none" }}
                 onChange={handleReportUpload}
                 disabled={isReportUploading}
               />
             </label>
-            
+
             {uploadStatus && (
-              <div style={{ fontSize: "12px", color: TOKENS.colors.primary, marginTop: "12px", fontWeight: 500 }}>
+              <div style={{ fontSize: "12px", color: TOKENS.colors.accent, marginTop: "12px", fontWeight: 500 }}>
                 {uploadStatus}
               </div>
             )}
           </div>
 
-          <button 
-            style={{ 
-              ...buttonStyle, 
-              background: "transparent", 
-              color: TOKENS.colors.textMuted, 
+          {/* One-tap, no-guilt skip (F1·AC4) */}
+          <button
+            style={{
+              ...buttonStyle,
+              background: "transparent",
+              color: TOKENS.colors.textMuted,
               border: `1px solid ${TOKENS.colors.border}`,
-              marginTop: "20px"
-            }} 
+              marginTop: "16px"
+            }}
             onClick={handleSkipReport}
           >
-            Skip for now, go to Home
+            {t("onboarding.reportSkip")}
           </button>
         </div>
       )}

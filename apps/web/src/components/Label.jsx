@@ -62,6 +62,7 @@ export function Label({ text, type = "default", style = {} }) {
         color: colors.color,
         fontFamily: TOKENS.fonts.data,
         textTransform: "capitalize",
+        whiteSpace: "nowrap",
         ...style
       }}
     >
