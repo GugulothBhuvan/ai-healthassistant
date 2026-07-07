@@ -45,7 +45,11 @@ export async function llm(role, messages, schema) {
       throw new Error("Krutrim returned an empty or invalid response structure");
     }
 
-    const content = data.choices[0].message.content.trim();
+    let content = data.choices[0].message.content.trim();
+    // Some Krutrim models ignore response_format and wrap output in
+    // markdown fences (```json ... ```). Strip them before parsing.
+    const fenced = content.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+    if (fenced) content = fenced[1];
     const parsedJson = JSON.parse(content);
     return schema.parse(parsedJson);
   };

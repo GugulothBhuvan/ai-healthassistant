@@ -17,9 +17,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Enable CORS and parsing middleware
+// Enable CORS and parsing middleware.
+// JSON limit raised well past Express's 100kb default: /assistant/exchange
+// carries base64-encoded voice recordings, which inflate ~33% over raw audio
+// size and can easily be several hundred KB for a few seconds of speech.
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "15mb" }));
 app.use(morgan("dev"));
 
 // JWT Verification Middleware
@@ -53,6 +56,7 @@ const authenticateUser = async (req, res, next) => {
     // Call Supabase GoTrue to verify the JWT session
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) {
+      console.warn("Auth rejected:", error ? error.message : "no user for token");
       return res.status(401).json({ error: error ? error.message : "Invalid or expired session" });
     }
 

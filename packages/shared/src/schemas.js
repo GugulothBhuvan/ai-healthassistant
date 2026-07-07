@@ -5,7 +5,9 @@ export const PortionSize = z.enum(["small", "medium", "large"]);
 
 export const FoodItemSchema = z.object({
   dish: z.string(),
-  ifct_id: z.string().nullable(),
+  // The LLM parse doesn't emit this — it's resolved server-side against the
+  // IFCT table at confirm time, so it must not be required of the model.
+  ifct_id: z.string().nullable().optional().default(null),
   size: PortionSize,
   confidence: z.number().min(0).max(1),
 });
@@ -16,14 +18,16 @@ export const ExchangeRequestSchema = z.object({
   audio: z.string().optional(), // base64
 }).refine((v) => v.text || v.audio, { message: "text or audio required" });
 
+// Fields are optional-with-defaults because LLMs frequently omit null/empty
+// fields from JSON output instead of emitting them explicitly.
 export const ParsedExchangeSchema = z.object({
   heard: z.string(),
-  food: z.array(FoodItemSchema),
-  water_glasses: z.number().int().min(0).nullable(),
-  weight_kg: z.number().nullable(),
-  unknown: z.array(z.string()),
-  iron_relevant: z.boolean(),
-  decline: z.string().nullable().optional(),
+  food: z.array(FoodItemSchema).default([]),
+  water_glasses: z.number().int().min(0).nullable().optional().default(null),
+  weight_kg: z.number().nullable().optional().default(null),
+  unknown: z.array(z.string()).default([]),
+  iron_relevant: z.boolean().optional().default(false),
+  decline: z.string().nullable().optional().default(null),
 });
 
 export const ExchangeResponseSchema = z.object({
