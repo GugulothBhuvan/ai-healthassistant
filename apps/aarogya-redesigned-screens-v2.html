@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aarogya — Redesigned screens (v2, faithful to originals)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F5F1E7;
+    --page:#EDE9DD;
+    --card:#FFFFFF;
+    --green-dark:#1E3F31;
+    --green-mid:#2B5943;
+    --green-tint:#E2EDE1;
+    --green-tint2:#D7E8DD;
+    --gold:#D8B65C;
+    --gold-text:#8A6A1F;
+    --tan-label:#9C813F;
+    --text-dark:#20281F;
+    --text-mut:#7A7669;
+    --red-bg:#FBEAEA;
+    --red-text:#A8383A;
+    --border:#E7E1D2;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:'Inter',sans-serif; background:var(--page); color:var(--text-dark); }
+  .banner{
+    max-width:1180px; margin:0 auto; padding:14px 20px 0;
+    font-size:12px; color:var(--text-mut); line-height:1.6;
+  }
+  .banner b{ color:var(--text-dark); }
+  .layout{ display:flex; gap:24px; max-width:1180px; margin:0 auto; padding:16px 20px 60px; }
+  .sidebar{ width:230px; flex-shrink:0; }
+  .sidebar h1{ font-family:'Fraunces',serif; font-size:20px; font-weight:600; margin:0 0 4px; color:var(--green-dark); }
+  .sidebar .sub{ font-size:12px; color:var(--text-mut); margin:0 0 14px; line-height:1.5; }
+  .nav-group-label{ font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-mut); font-weight:600; margin:14px 0 6px; }
+  .nav-item{ display:flex; align-items:center; justify-content:space-between; padding:9px 11px; border-radius:8px; font-size:12.5px; font-weight:500; cursor:pointer; margin-bottom:3px; border:1px solid transparent; }
+  .nav-item:hover{ background:#fff; }
+  .nav-item.active{ background:#fff; border-color:var(--border); color:var(--green-dark); }
+  .nav-count{ font-size:10px; background:var(--green-tint); color:var(--green-dark); padding:2px 7px; border-radius:20px; font-weight:600; }
+  .nav-count.zero{ background:#F0EFEA; color:var(--text-mut); }
+  .stage{ flex:1; display:flex; gap:28px; align-items:flex-start; }
+  .phone-wrap{ flex-shrink:0; }
+  .phone{ width:320px; height:660px; background:var(--cream); border-radius:34px; border:8px solid #1c1c1a; overflow:hidden; position:relative; box-shadow:0 12px 30px rgba(0,0,0,0.18); }
+  .screen{ display:none; width:100%; height:100%; flex-direction:column; }
+  .screen.active{ display:flex; }
+  .scr-body{ flex:1; overflow-y:auto; padding:20px 18px 16px; }
+  .scr-body::-webkit-scrollbar{ display:none; }
+  h2.title{ font-family:'Fraunces',serif; font-size:23px; font-weight:600; margin:0 0 2px; color:var(--green-dark); }
+  p.subtitle{ font-size:12px; color:var(--text-mut); margin:0 0 16px; }
+  .card{ background:var(--card); border-radius:14px; padding:15px; margin-bottom:13px; border:1px solid var(--border); }
+  .card-title{ font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; margin:0 0 12px; }
+  .label-tan{ font-size:10px; letter-spacing:0.04em; color:var(--tan-label); font-weight:600; text-transform:uppercase; }
+  .val{ font-size:14px; font-weight:600; margin-top:2px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; }
+  .stat{ background:#FAF8F2; border-radius:10px; padding:9px; text-align:center; }
+  .stat .n{ font-size:15px; font-weight:600; color:var(--green-dark); }
+  .stat .l{ font-size:9.5px; color:var(--text-mut); }
+  .stat .l2{ font-size:8.5px; color:#A6A192; }
+  .btn-green{ background:var(--green-dark); color:#fff; border:none; border-radius:24px; padding:12px; font-size:13px; font-weight:600; width:100%; text-align:center; font-family:'Inter',sans-serif; }
+  .btn-gold{ background:var(--gold); color:#5C4413; border:none; border-radius:24px; padding:12px; font-size:13px; font-weight:600; width:100%; text-align:center; }
+  .btn-outline{ background:#fff; color:var(--green-dark); border:1px solid var(--border); border-radius:24px; padding:11px; font-size:13px; font-weight:600; width:100%; text-align:center; }
+  .btn-red{ background:var(--red-bg); color:var(--red-text); border:none; border-radius:14px; padding:14px; font-size:13px; font-weight:600; width:100%; text-align:center; }
+  .navbar{ display:flex; justify-content:space-around; align-items:center; padding:9px 6px 15px; background:var(--cream); border-top:1px solid var(--border); }
+  .nav-tab{ display:flex; flex-direction:column; align-items:center; gap:2px; font-size:9px; color:var(--text-mut); font-weight:500; }
+  .nav-tab.active{ color:var(--green-dark); }
+  .fab{ width:46px; height:46px; border-radius:50%; background:var(--green-dark); display:flex; align-items:center; justify-content:center; color:#fff; margin-top:-26px; border:4px solid var(--cream); }
+  .pill-select{ border:1.5px solid var(--border); border-radius:14px; padding:12px 10px; font-size:12px; font-weight:600; text-align:center; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .pill-select.row{ justify-content:flex-start; }
+  .pill-select.on{ background:var(--green-tint); border-color:var(--green-mid); color:var(--green-dark); }
+  .progressdots{ display:flex; gap:5px; margin:0 0 12px; }
+  .progressdots span{ width:6px; height:6px; border-radius:50%; background:var(--border); }
+  .progressdots span.on{ background:var(--green-dark); width:16px; border-radius:4px; }
+  .annotations{ flex:1; min-width:280px; max-width:340px; }
+  .annotations h3{ font-size:14px; font-weight:600; margin:0 0 12px; color:var(--green-dark); }
+  .fix-item{ display:flex; gap:10px; padding:11px 12px; background:#fff; border-radius:10px; border:1px solid var(--border); margin-bottom:8px; }
+  .fix-tag{ flex-shrink:0; font-size:9px; font-weight:700; padding:3px 6px; border-radius:5px; height:fit-content; }
+  .tag-P0{ background:#FBEAEA; color:#A8383A; }
+  .tag-P1{ background:#FCF1DF; color:#8A6A1F; }
+  .tag-P2{ background:#E6F0FA; color:#2A5C8F; }
+  .tag-P3{ background:#F0EFEA; color:#6B685E; }
+  .tag-NONE{ background:#EFF3EC; color:#4C6B44; }
+  .fix-text{ font-size:12px; line-height:1.45; color:var(--text-dark); }
+  .unchanged-note{ font-size:11.5px; color:var(--text-mut); background:#F5F5F0; border:1px dashed var(--border); border-radius:10px; padding:10px 12px; margin-bottom:10px; }
+  input[type=text]{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#FAF8F2; font-size:13px; font-family:'Inter',sans-serif; color:var(--text-dark); }
+  .field-label{ font-size:12px; font-weight:600; margin:12px 0 6px; }
+  .rangebar{ height:6px; background:linear-gradient(to right, #E24B4A 0%, #E24B4A 30%, #EF9F27 30%, #EF9F27 55%, #639922 55%, #639922 100%); border-radius:4px; position:relative; margin:8px 0 4px; }
+  .rangebar .dot{ width:10px;height:10px;border-radius:50%; background:#E24B4A; border:2px solid #fff; position:absolute; top:-2px; }
+  .chip-eg{ background:#FAF8F2; border:1px solid var(--border); border-radius:20px; padding:8px 12px; font-size:11.5px; display:inline-block; margin:3px 4px 3px 0; }
+  .kbd{ font-size:11px; color:var(--text-mut); }
+  .checkbox-row{ border:1.5px solid var(--green-mid); background:var(--green-tint); border-radius:14px; padding:11px 12px; margin-bottom:8px; }
+  .checkbox-row .h{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--text-dark); }
+  .checkbox-row .d{ font-size:11px; color:var(--text-mut); margin:4px 0 0 26px; line-height:1.4; }
+  .check{ width:16px;height:16px;border-radius:4px;background:var(--green-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+  .dotgrid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:8px; }
+  .dotgrid span{ width:100%; padding-top:100%; background:#E9E6DA; border-radius:50%; display:block; }
+</style>
+</head>
+<body>
+<div class="banner">
+  <b>v2 — corrected.</b> Every element from your original screenshots is preserved here. Only the specific tickets listed per screen are applied on top — nothing else was restructured, simplified, or removed. Screens with no tickets are shown for completeness with an "unchanged" note.
+</div>
+<div class="layout">
+  <div class="sidebar">
+    <h1>Aarogya</h1>
+    <p class="sub">All 11 screens from your walkthrough, with only ticketed fixes applied.</p>
+    <div class="nav-group-label">Onboarding</div>
+    <div id="nav-onboard"></div>
+    <div class="nav-group-label">Main app</div>
+    <div id="nav-main"></div>
+  </div>
+  <div class="stage">
+    <div class="phone-wrap"><div class="phone" id="phone"></div></div>
+    <div class="annotations">
+      <h3 id="ann-title">Fixes applied</h3>
+      <div id="ann-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const screens = [
+{
+  id:'body', group:'onboard', name:'Tell us about your body',
+  fixes:[],
+  html:`
+    <div class="scr-body" style="justify-content:center;display:flex;flex-direction:column;">
+      <h2 class="title" style="text-align:center;">Tell us about your body</h2>
+      <p class="subtitle" style="text-align:center;">We use this to estimate your daily base metabolic rate.</p>
+      <p class="field-label">Your name</p>
+      <input type="text" placeholder="Enter your name" value="Bhuvan">
+      <p class="field-label">Sex</p>
+      <div class="grid2" style="margin-bottom:4px;">
+        <div class="pill-select">Female</div>
+        <div class="pill-select on">Male</div>
+      </div>
+      <p class="field-label">Age (years)</p>
+      <input type="text" value="27">
+      <p class="field-label">Height (cm)</p>
+      <input type="text" value="186">
+      <p class="field-label">Weight (kg)</p>
+      <input type="text" value="68">
+      <div style="height:14px;"></div>
+      <button class="btn-green">Next</button>
+    </div>
+  `
+},
+{
+  id:'goals', group:'onboard', name:'Goals & dream weight',
+  fixes:[],
+  html:`
+    <div class="scr-body" style="justify-content:center;display:flex;flex-direction:column;">
+      <h2 class="title" style="text-align:center;">Goals &amp; dream weight</h2>
+      <p class="subtitle" style="text-align:center;">Define where you want to go and what weight makes you feel healthiest.</p>
+      <p class="field-label" style="margin-top:0;">What brought you here?</p>
+      <div class="pill-select on row" style="margin-bottom:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg>
+        Weight loss &amp; management
+      </div>
+      <div class="pill-select row" style="margin-bottom:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4v16M18 4v16M6 12h12"/></svg>
+        Muscle gain &amp; fitness
+      </div>
+      <div class="pill-select row" style="margin-bottom:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
+        Manage nutrient deficiencies
+      </div>
+      <div class="pill-select row" style="margin-bottom:14px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2 4 6 4c2 0 3.5 1.2 4 2.3C10.5 5.2 12 4 14 4c4 0 5.5 4 3.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg>
+        General health &amp; longevity
+      </div>
+      <p class="field-label">Dream weight (kg)</p>
+      <input type="text" value="65">
+      <div style="height:14px;"></div>
+      <button class="btn-green">Next</button>
+    </div>
+  `
+},
+{
+  id:'track', group:'onboard', name:'What do you want to track?',
+  fixes:[],
+  html:`
+    <div class="scr-body">
+      <h2 class="title" style="text-align:center;">What do you want to track?</h2>
+      <p class="subtitle" style="text-align:center;">Choose the main activities you plan to focus on with Aarogya.</p>
+      <div class="checkbox-row">
+        <div class="h"><span class="check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>Track meals and nutrition</div>
+        <div class="d">Log lunches, breakfasts, and track macronutrient fill rates.</div>
+      </div>
+      <div class="checkbox-row">
+        <div class="h"><span class="check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>Monitor blood marker deficiencies</div>
+        <div class="d">Flag low iron, Vitamin D, or HbA1c to find diet fixes.</div>
+      </div>
+      <div class="checkbox-row">
+        <div class="h"><span class="check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>Log activity and active burn</div>
+        <div class="d">Tell Aarogya about walks, runs, and physical workouts.</div>
+      </div>
+      <div class="checkbox-row">
+        <div class="h"><span class="check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>Track daily water intake</div>
+        <div class="d">Record your hydration cup-by-cup easily.</div>
+      </div>
+      <div class="checkbox-row">
+        <div class="h"><span class="check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>Log medications &amp; supplements</div>
+        <div class="d">Snap prescriptions to track dosages and weekly adherence.</div>
+      </div>
+      <div style="height:6px;"></div>
+      <button class="btn-green">Next</button>
+    </div>
+  `
+},
+{
+  id:'habits', group:'onboard', name:'Diet & habits',
+  fixes:[
+    {tag:'P1',label:'P1-1',text:'CTA changed from "Calculate targets" to "Next" — targets don\'t exist yet at this point, so the button no longer implies they do.'},
+    {tag:'P3',label:'P3-7',text:'Step indicator added. Everything else — both option groups, icons, and layout — is unchanged.'},
+  ],
+  html:`
+    <div class="scr-body" style="justify-content:center;display:flex;flex-direction:column;">
+      <div class="progressdots"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></div>
+      <p style="font-size:11px;color:var(--text-mut);margin:0 0 12px;">Step 4 of 6</p>
+      <h2 class="title" style="text-align:center;">Diet &amp; habits</h2>
+      <p class="subtitle" style="text-align:center;">Tell us about your plate and routine so we can adjust suggestions.</p>
+      <p class="field-label" style="margin-top:0;">Dietary pattern</p>
+      <div class="grid3" style="margin-bottom:14px;">
+        <div class="pill-select">Veg</div>
+        <div class="pill-select">Eggs ok</div>
+        <div class="pill-select on">Non-veg</div>
+      </div>
+      <p class="field-label">Activity level</p>
+      <div class="pill-select on row" style="margin-bottom:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Mostly sitting (desk job)
+      </div>
+      <div class="pill-select row" style="margin-bottom:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M8 21l2-6-3-2 1-5 4-1 3 3h3M10 15l4 1 2 5"/></svg>
+        Somewhere between
+      </div>
+      <div class="pill-select row" style="margin-bottom:14px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c2 3 1 4-1 6-2 2-3 4-1 7 1-2 2-2 3-1-1-2 0-3 1-4 2 2 2 5 0 7-4 2-8-1-8-6 0-3 2-6 6-9z"/></svg>
+        On my feet a lot
+      </div>
+      <button class="btn-green">Next</button>
+    </div>
+  `
+},
+{
+  id:'settargets', group:'onboard', name:'Set daily targets',
+  fixes:[
+    {tag:'P1',label:'P1-2',text:'Added a line showing exactly which inputs (age, height, weight, activity) fed the Mifflin-St Jeor formula. Input fields and layout otherwise unchanged.'},
+    {tag:'P3',label:'P3-7',text:'Step indicator carried through.'},
+  ],
+  html:`
+    <div class="scr-body" style="justify-content:center;display:flex;flex-direction:column;">
+      <div class="progressdots"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span></div>
+      <p style="font-size:11px;color:var(--text-mut);margin:0 0 12px;">Step 5 of 6</p>
+      <h2 class="title" style="text-align:center;">Set daily targets</h2>
+      <p class="subtitle" style="text-align:center;">These are calculated based on your Mifflin-St Jeor details, but you must review and input your preferred values.</p>
+      <div class="card" style="background:#FAF8F2;">
+        <p style="font-size:11.5px;color:var(--text-mut);margin:0;line-height:1.6;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--tan-label)" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Based on age 27, height 186cm, weight 68kg, "Mostly sitting" activity, Non-veg diet.
+        </p>
+      </div>
+      <p class="field-label">Daily calorie target (kcal)</p>
+      <input type="text" value="2410">
+      <p class="field-label">Protein target (g)</p>
+      <input type="text" value="98">
+      <p class="field-label">Fibre target (g)</p>
+      <input type="text" value="34">
+      <div style="height:14px;"></div>
+      <button class="btn-green">Confirm targets</button>
+    </div>
+  `
+},
+{
+  id:'targetsummary', group:'onboard', name:'Your daily targets + bloodwork',
+  fixes:[
+    {tag:'P0',label:'P0-1',text:'The Iron card no longer shows a fabricated marker value (45 µg/dL) before any report is uploaded. Replaced with a generic explainer card. The top targets summary row is unchanged from your original.'},
+    {tag:'P1',label:'P1-3',text:'Copy explains the mechanism generically ("like iron or Vitamin D") instead of asserting a specific fake result.'},
+    {tag:'P3',label:'P3-1',text:'"Upload my report" CTA color unified to the same dark green used elsewhere (was gold on this screen only, dark green everywhere else).'},
+  ],
+  html:`
+    <div class="scr-body">
+      <h2 class="title" style="text-align:center;">Your daily targets</h2>
+      <p class="subtitle" style="text-align:center;">Derived directly from your customized metrics.</p>
+      <div class="grid3" style="margin-bottom:14px;">
+        <div class="stat"><div class="n">2410</div><div class="l">Calories</div><div class="l2">kcal</div></div>
+        <div class="stat"><div class="n">98</div><div class="l">Protein</div><div class="l2">g</div></div>
+        <div class="stat"><div class="n">34</div><div class="l">Fibre</div><div class="l2">g</div></div>
+      </div>
+      <div class="card" style="background:var(--green-dark);border:none;">
+        <p style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:#fff;text-align:center;margin:0 0 8px;line-height:1.4;">Turn your bloodwork into daily food guidance.</p>
+        <p style="font-size:12px;color:#C7DACC;text-align:center;margin:0 0 12px;">One upload. Every meal starts closing your gaps.</p>
+        <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:11px;">
+          <p style="font-size:11.5px;color:#EAF2EC;margin:0;line-height:1.6;">We'll flag anything outside the healthy range — like iron, Vitamin D, or HbA1c — and suggest foods that help close the gap.</p>
+        </div>
+      </div>
+      <button class="btn-green" style="margin-bottom:10px;">Upload my report</button>
+      <button class="btn-outline">Not now — I'll add it later</button>
+    </div>
+  `
+},
+{
+  id:'home', group:'main', name:'Home',
+  fixes:[
+    {tag:'P0',label:'P0-2',text:'Logging now updates the macro bars, calorie count, and "Logged Today" list immediately in this session. Everything below (water/activity/weight quick-stats with their real values, the type-or-talk row) is unchanged.'},
+    {tag:'P2',label:'P2-1',text:'Mic FAB stays the primary action. Camera and plus icons are kept exactly as before, just grouped with a small "or" label so the sheet reads as the main path without removing the shortcuts.'},
+    {tag:'P3',label:'P3-3',text:'Avatar defaults to a person icon instead of a stray "t" when no name is set — only shows initials once a real name exists.'},
+    {tag:'P3',label:'P3-8',text:'Calorie counter reads "312 kcal" instead of ambiguous "312 in".'},
+  ],
+  html:`
+    <div class="scr-body">
+      <p style="font-size:11px;color:var(--text-mut);margin:0 0 2px;">Wednesday, 8 Jul</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h2 class="title" style="margin:0;">Good evening, Bhuvan</h2>
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--green-tint);display:flex;align-items:center;justify-content:center;color:var(--green-dark);font-size:12px;font-weight:600;">B</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <div style="width:3px;height:14px;background:var(--gold);border-radius:2px;"></div>
+        <span style="font-size:12px;color:var(--text-mut);">Type or talk to record your meals, weight, or water.</span>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;font-weight:600;">Today</span>
+          <div style="display:flex;gap:8px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#FAF8F2;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-mut)" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13" r="3.5"/></svg>
+            </div>
+            <div style="width:28px;height:28px;border-radius:50%;background:#FAF8F2;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-mut)" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:26px;font-weight:600;color:var(--green-dark);margin:6px 0 8px;">312 <span style="font-size:12px;font-weight:500;color:var(--text-mut);">kcal · target 2,410</span></div>
+        <div class="grid2" style="margin-bottom:4px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-mut);margin-bottom:3px;"><span>Protein</span><span>22%</span></div>
+            <div style="height:5px;background:#EEEBE0;border-radius:3px;"><div style="height:100%;width:22%;background:var(--green-dark);border-radius:3px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-mut);margin-bottom:3px;"><span>Carb</span><span>18%</span></div>
+            <div style="height:5px;background:#EEEBE0;border-radius:3px;"><div style="height:100%;width:18%;background:var(--green-dark);border-radius:3px;"></div></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-mut);margin-bottom:3px;"><span>Fat</span><span>14%</span></div>
+            <div style="height:5px;background:#EEEBE0;border-radius:3px;"><div style="height:100%;width:14%;background:var(--green-dark);border-radius:3px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-mut);margin-bottom:3px;"><span>Fibre</span><span>9%</span></div>
+            <div style="height:5px;background:#EEEBE0;border-radius:3px;"><div style="height:100%;width:9%;background:var(--green-dark);border-radius:3px;"></div></div>
+          </div>
+        </div>
+      </div>
+      <p class="label-tan" style="margin-bottom:8px;">Your priorities</p>
+      <div class="card" style="background:var(--green-tint2);border:none;">
+        <p style="font-size:12.5px;margin:0 0 10px;line-height:1.5;">Add a health report and this screen learns your body.</p>
+        <button class="btn-green">Upload report</button>
+      </div>
+      <div class="grid3" style="margin-bottom:14px;">
+        <div class="stat" style="position:relative;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-dark)" stroke-width="2" style="margin-bottom:4px;"><path d="M12 20V10M12 10c0-4-2-6-4-7 0 3 1 5 4 7z"/></svg>
+          <div class="n" style="font-size:12px;">0/9</div><div class="l">glasses</div>
+          <div style="position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--green-dark);">+</div>
+        </div>
+        <div class="stat" style="position:relative;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-dark)" stroke-width="2" style="margin-bottom:4px;"><path d="M5 3v18M19 3v18M5 8h4M5 13h4"/></svg>
+          <div class="l" style="font-size:11px;font-weight:600;color:var(--text-dark);">No activity</div>
+          <div style="position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--green-dark);">+</div>
+        </div>
+        <div class="stat" style="position:relative;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-dark)" stroke-width="2" style="margin-bottom:4px;"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          <div class="n" style="font-size:12px;">72 kg</div>
+          <div style="position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--green-dark);">+</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <p class="label-tan" style="margin:0;">Logged today</p>
+        <span style="font-size:11px;color:var(--green-dark);font-weight:600;">+ add</span>
+      </div>
+      <div class="card" style="padding:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-bottom:1px solid var(--border);">
+          <span>2 roti, paneer sabji</span><span style="color:var(--text-mut);">1:20 pm</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;">
+          <span>1 glass of water</span><span style="color:var(--text-mut);">1:05 pm</span>
+        </div>
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="nav-tab active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg>Trends</div>
+      <div class="fab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg></div>
+      <div class="nav-tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2 4 6 4c2 0 3.5 1.2 4 2.3C10.5 5.2 12 4 14 4c4 0 5.5 4 3.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg>Health</div>
+      <div class="nav-tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>You</div>
+    </div>
+  `
+},
+{
+  id:'logassist', group:'main', name:'Log assistant sheet',
+  fixes:[
+    {tag:'P1',label:'P1-4',text:'Every log now ends in an itemized, editable breakdown before it commits — not only when the parser is unsure. Example chips, camera icon, and text input are all unchanged.'},
+    {tag:'P2',label:'P2-2',text:'Mic and camera icons now match the Home FAB\'s size/color.'},
+    {tag:'P2',label:'P2-3',text:'Sheet titled "Talk to Aarogya" — matches the guided tour name instead of the generic "Log Assistant."'},
+    {tag:'P3',label:'P3-12',text:'Example chips labeled "Try saying" and are tap-to-fill.'},
+  ],
+  html:`
+    <div style="flex:1;background:rgba(30,63,49,0.35);display:flex;align-items:flex-end;">
+      <div style="background:var(--cream);width:100%;border-radius:20px 20px 0 0;padding:20px 18px 22px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--green-dark);display:flex;align-items:center;justify-content:center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+            </div>
+            <span style="font-family:'Fraunces',serif;font-weight:600;font-size:16px;">Talk to Aarogya</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <p style="font-size:11.5px;color:var(--text-mut);margin:0 0 12px;">Log your meals, medicine, activity, or water.</p>
+        <p class="label-tan" style="margin-bottom:6px;">Try saying</p>
+        <div style="margin-bottom:12px;">
+          <span class="chip-eg">"do roti aur paneer ki sabji"</span>
+          <span class="chip-eg">"drank 2 glasses of water"</span>
+          <span class="chip-eg">"took my D3"</span>
+          <span class="chip-eg">"30 min walk"</span>
+        </div>
+        <div class="card" style="background:#FAF8F2;margin-bottom:12px;">
+          <p style="font-size:11px;font-weight:600;color:var(--tan-label);text-transform:uppercase;margin:0 0 8px;">Got it — confirm before logging</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span>Roti</span><span style="display:flex;align-items:center;gap:6px;">2 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-mut)" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:6px 0;">
+            <span>Paneer sabji</span><span style="display:flex;align-items:center;gap:6px;">1 bowl <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-mut)" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></span>
+          </div>
+        </div>
+        <button class="btn-green" style="margin-bottom:10px;">Confirm and log</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--green-dark)" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13" r="3.5"/></svg>
+          </div>
+          <input type="text" placeholder="Type '2 roti paneer sabji' or...">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--green-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+},
+{
+  id:'health', group:'main', name:'Health tab',
+  fixes:[
+    {tag:'NONE',label:'unchanged',text:'No ticket touches this screen\'s layout — Documents and Body cards stay side-by-side exactly as in your original, same copy throughout.'},
+  ],
+  html:`
+    <div class="scr-body">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">
+        <h2 class="title">Health</h2>
+        <div style="background:var(--green-tint);border-radius:20px;padding:6px 11px;display:flex;align-items:center;gap:5px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green-dark)" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--green-dark);">Doctor summary</span>
+        </div>
+      </div>
+      <p class="subtitle">Everything true about your body, with receipts.</p>
+      <div class="grid2" style="margin-bottom:13px;">
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-title">Documents <span style="margin-left:auto;color:var(--green-dark);font-weight:600;font-size:12px;">+ add</span></div>
+          <p style="font-size:12px;color:var(--text-mut);margin:0;">No documents yet.</p>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-title">Body <span style="margin-left:auto;color:var(--text-mut);font-weight:500;font-size:11px;">Weight</span></div>
+          <div style="font-size:20px;font-weight:600;color:var(--green-dark);">72 <span style="font-size:11px;color:var(--text-mut);font-weight:500;">kg</span></div>
+          <p style="font-size:10.5px;color:var(--text-mut);margin:6px 0 0;line-height:1.4;">Current weight recorded. Add more weight entries over the coming weeks to track body trends.</p>
+        </div>
+      </div>
+      <div class="card" style="background:var(--green-tint2);border:none;">
+        <p style="font-size:12.5px;line-height:1.6;margin:0 0 10px;">Add a health report and this screen learns your body.</p>
+        <button class="btn-green">Upload report</button>
+      </div>
+      <p style="font-size:11px;color:var(--text-mut);text-align:center;margin-top:4px;">Your report stays yours. We read it, we don't keep score on you.</p>
+    </div>
+    <div class="navbar">
+      <div class="nav-tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg>Trends</div>
+      <div class="fab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg></div>
+      <div class="nav-tab active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2 4 6 4c2 0 3.5 1.2 4 2.3C10.5 5.2 12 4 14 4c4 0 5.5 4 3.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg>Health</div>
+      <div class="nav-tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>You</div>
+    </div>
+  `
+},
+{
+  id:'trends', group:'main', name:'Trends tab',
+  fixes:[
+    {tag:'P3',label:'P3-2',text:'Week/Month toggle selected-state color changed from black to brand green. Every other card and section below — stats row, "No blood marker trend linked," Days with logs, Your Kitchen — is unchanged.'},
+    {tag:'P3',label:'P3-5',text:'Energy "in vs burned" chart now shows an empty-state icon + message instead of bare axis labels with nothing else.'},
+  ],
+  html:`
+    <div class="scr-body">
+      <h2 class="title">Trends</h2>
+      <p class="subtitle">Quietly closing the gap.</p>
+      <div style="display:flex;background:#FAF8F2;border-radius:20px;padding:3px;margin-bottom:14px;">
+        <div style="flex:1;text-align:center;padding:7px;border-radius:18px;background:var(--green-dark);color:#fff;font-size:12px;font-weight:600;">Week</div>
+        <div style="flex:1;text-align:center;padding:7px;border-radius:18px;color:var(--text-mut);font-size:12px;font-weight:600;">Month</div>
+      </div>
+      <div class="grid3" style="margin-bottom:13px;">
+        <div class="stat"><div class="n">0g</div><div class="l">Protein/day</div><div class="l2">target 64.8g</div></div>
+        <div class="stat"><div class="n">0min</div><div class="l">Activity</div><div class="l2">total this week</div></div>
+        <div class="stat"><div class="n">0/7</div><div class="l">Log days</div><div class="l2">days logged</div></div>
+      </div>
+      <div class="card" style="background:#F2EFE6;">
+        <div style="text-align:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tan-label)" stroke-width="2" style="margin-bottom:6px;"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
+          <p style="font-size:12.5px;font-weight:600;margin:0 0 3px;">No blood marker trend linked</p>
+          <p style="font-size:11px;color:var(--text-mut);margin:0;line-height:1.4;">Marker support trends require a blood report. Go to the Health tab to upload.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="justify-content:space-between;">
+          <span>Energy · in vs burned</span>
+          <span style="font-size:10px;color:var(--text-mut);display:flex;align-items:center;gap:8px;">
+            <span style="display:flex;align-items:center;gap:3px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--green-dark);display:inline-block;"></span>in</span>
+            <span style="display:flex;align-items:center;gap:3px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block;"></span>burned</span>
+          </span>
+        </div>
+        <div style="text-align:center;padding:18px 0 8px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-mut)" stroke-width="1.6" style="margin-bottom:8px;"><path d="M3 17l6-6 4 4 8-8"/></svg>
+          <p style="font-size:11.5px;color:var(--text-mut);margin:0 0 8px;">Log a few meals this week to see your energy pattern.</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-mut);border-top:1px solid var(--border);padding-top:8px;">
+          <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--gold);border-radius:0 14px 14px 0;">
+        <p style="font-size:10px;color:var(--tan-label);font-weight:600;text-transform:uppercase;margin:0 0 4px;">Noticed this week</p>
+        <p style="font-size:12px;margin:0;">Log meals and activities to see weekly pattern insights.</p>
+      </div>
+      <div class="grid2">
+        <div class="card" style="margin-bottom:0;">
+          <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;font-weight:600;">Days with logs</span><span style="font-size:10px;color:var(--text-mut);">Jul</span></div>
+          <div class="dotgrid">${Array(28).fill('<span></span>').join('')}</div>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <span style="font-size:12px;font-weight:600;">Your kitchen</span>
+          <p style="font-size:11px;color:var(--text-mut);margin:8px 0 0;">No food logged this week.</p>
+        </div>
+      </div>
+    </div>
+  `
+},
+{
+  id:'aboutyou', group:'main', name:'About you',
+  fixes:[
+    {tag:'P3',label:'P3-10',text:'Muted tan captions (Diet/Gender/Age/Height labels) darkened slightly to clear WCAG AA contrast — same layout, same content, same two cards.'},
+  ],
+  html:`
+    <div class="scr-body">
+      <h2 class="title">About you</h2>
+      <p class="subtitle">Manage your physical and dietary settings.</p>
+      <div class="card">
+        <div class="card-title">Physical demographics</div>
+        <div class="grid2">
+          <div><div class="label-tan">Diet</div><div class="val">Non-veg</div></div>
+          <div><div class="label-tan">Gender</div><div class="val">Male</div></div>
+          <div style="margin-top:10px;"><div class="label-tan">Age</div><div class="val">27 years</div></div>
+          <div style="margin-top:10px;"><div class="label-tan">Height</div><div class="val">186 cm</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Daily intake targets</div>
+        <div class="grid3">
+          <div class="stat"><div class="n">2410</div><div class="l">Calories</div><div class="l2">kcal</div></div>
+          <div class="stat"><div class="n">98</div><div class="l">Protein</div><div class="l2">g</div></div>
+          <div class="stat"><div class="n">34</div><div class="l">Fibre</div><div class="l2">g</div></div>
+        </div>
+      </div>
+      <button class="btn-outline" style="margin-bottom:10px;">Replay guided tour</button>
+      <button class="btn-red">Reset profile &amp; settings</button>
+    </div>
+    <div class="navbar">
+      <div class="nav-tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg>Trends</div>
+      <div class="fab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg></div>
+      <div class="nav-tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2 4 6 4c2 0 3.5 1.2 4 2.3C10.5 5.2 12 4 14 4c4 0 5.5 4 3.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg>Health</div>
+      <div class="nav-tab active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>You</div>
+    </div>
+  `
+},
+];
+
+const navOnboard = document.getElementById('nav-onboard');
+const navMain = document.getElementById('nav-main');
+const phone = document.getElementById('phone');
+const annTitle = document.getElementById('ann-title');
+const annList = document.getElementById('ann-list');
+
+function render(id){
+  const s = screens.find(x=>x.id===id);
+  phone.innerHTML = `<div class="screen active">${s.html}</div>`;
+  annTitle.textContent = s.name + ' — fixes applied';
+  if(s.fixes.length===0){
+    annList.innerHTML = `<div class="unchanged-note">No ticket touches this screen. Shown as-is from your screenshots for completeness.</div>`;
+  } else {
+    annList.innerHTML = s.fixes.map(f=>`
+      <div class="fix-item">
+        <span class="fix-tag tag-${f.tag}">${f.label}</span>
+        <span class="fix-text">${f.text}</span>
+      </div>
+    `).join('');
+  }
+  document.querySelectorAll('.nav-item').forEach(el=>{
+    el.classList.toggle('active', el.dataset.id===id);
+  });
+}
+
+function navItemHtml(s){
+  const count = s.fixes.length;
+  return `<div class="nav-item" data-id="${s.id}" onclick="render('${s.id}')">
+    <span>${s.name}</span>
+    <span class="nav-count ${count===0?'zero':''}">${count}</span>
+  </div>`;
+}
+navOnboard.innerHTML = screens.filter(s=>s.group==='onboard').map(navItemHtml).join('');
+navMain.innerHTML = screens.filter(s=>s.group==='main').map(navItemHtml).join('');
+
+render('body');
+</script>
+</body>
+</html>

@@ -21,6 +21,7 @@ export const COPY_STRINGS = {
 
   // Home Dashboard
   "home.invitationState": "Add a health report and this screen learns your body.",
+  "home.reportFooterLine": "Have a lab report? Add it in Health and Aarogya tailors food suggestions to your markers.",
   "home.honestyCap": "Only your next blood test knows for sure.",
   "home.trendTitle": "This week's energy",
   "home.tapForFoods": "Tap for food guidance",
@@ -45,7 +46,11 @@ export const COPY_STRINGS = {
   "guidance.hba1c.default": "More fibre, whole dals, fewer refined carbs.",
   "guidance.generic": "Balanced dals, greens, and whole grains help.",
 
-  // Onboarding report moment
+  // Onboarding closing moment — voice assistant first, report optional
+  "onboarding.voiceFirstTitle": "Just speak. Aarogya logs it.",
+  "onboarding.voiceFirstBody": "Meals, water, weight, medicines — one sentence each.",
+  "onboarding.startCta": "Start using Aarogya",
+  "onboarding.reportOptional": "Have a lab report? Add it now (optional)",
   "onboarding.reportValueTitle": "Turn your bloodwork into daily food guidance.",
   "onboarding.reportValueBody": "One upload. Every meal starts closing your gaps.",
   "onboarding.reportPreviewCaption": "This is what a linked report unlocks.",

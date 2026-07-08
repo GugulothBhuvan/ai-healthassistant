@@ -8,6 +8,7 @@ import { Voice } from "../components/Voice.jsx";
 import { X, Send, Check, AlertTriangle, MessageCircleOff, Loader, Camera, Mic, Image as ImageIcon, Sparkles } from "lucide-react";
 import { t } from "../lib/copy.js";
 import { useToast } from "../ui/Feedback.jsx";
+import { useAppState } from "../lib/useAppState.jsx";
 
 export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "text", initialPlaceholder = "" }) {
   const {
@@ -82,13 +83,18 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
     reader.readAsDataURL(file);
   };
 
+  const appState = useAppState();
+
   const handleConfirmLog = async () => {
     try {
       const res = await confirm(sizeOverride);
       if (res) {
+        // Refetch home/week data so dashboard updates instantly (P0-2)
+        try { await appState.refetch(); } catch (_) {}
         if (onLogCommitted) {
           onLogCommitted(res);
         }
+        toast("Logged successfully.", { tone: "success" });
         handleClose();
       }
     } catch (err) {
@@ -185,7 +191,7 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
               : <Mic size={18} style={{ color: TOKENS.colors.primary }} />
             }
             <h3 style={{ fontSize: "16px", fontWeight: 600, margin: 0 }}>
-              {mode === "camera" ? "Snap & Log" : "Log Assistant"}
+              {mode === "camera" ? "Snap & Log" : "Talk to Aarogya"}
             </h3>
           </div>
           <button
@@ -249,8 +255,8 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
           {/* Text mode — suggestions */}
           {!loading && !errorMsg && !parsedResponse && mode === "text" && (
             <div>
-              <p style={{ fontSize: "13px", color: TOKENS.colors.textMuted, margin: "0 0 12px 0" }}>
-                Log your meals, medicine, activity, or water:
+              <p style={{ fontSize: "11px", fontWeight: 600, color: TOKENS.colors.textFaint, textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 8px" }}>
+                Try saying
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {suggestions.map((suggestion, idx) => (
@@ -261,7 +267,7 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
                       padding: "8px 12px",
                       background: TOKENS.colors.bg,
                       border: `1px solid ${TOKENS.colors.border}`,
-                      borderRadius: "8px",
+                      borderRadius: "20px",
                       fontSize: "12px",
                       color: TOKENS.colors.ink,
                       cursor: "pointer",
@@ -318,18 +324,14 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
                   {/* Food log confirmation list */}
                   {parsedResponse.food && parsedResponse.food.length > 0 && (
                     <div>
-                      <div style={{ fontSize: "11px", color: TOKENS.colors.textMuted, textTransform: "uppercase", marginBottom: "6px" }}>Parsed Foods</div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ fontSize: "11px", fontWeight: 600, color: TOKENS.colors.textFaint, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "8px" }}>Got it — confirm before logging</div>
+                      <div style={{ background: TOKENS.colors.bg, borderRadius: "10px", padding: "4px 0", border: `1px solid ${TOKENS.colors.border}` }}>
                         {parsedResponse.food.map((item, idx) => (
-                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: TOKENS.colors.greenSoft, padding: "10px 14px", borderRadius: "8px" }}>
-                            <div>
-                              <strong style={{ fontSize: "14px" }}>{item.dish}</strong>
-                              <span style={{ fontSize: "11px", color: TOKENS.colors.textMuted, marginLeft: "8px" }}>
-                                parsed size: {item.size}
-                              </span>
-                            </div>
-                            <span style={{ fontSize: "12px", fontWeight: 600, color: TOKENS.colors.primary }}>
-                              {Math.round(item.confidence * 100)}% Match
+                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 14px", borderBottom: idx < parsedResponse.food.length - 1 ? `1px solid ${TOKENS.colors.border}` : "none" }}>
+                            <span style={{ fontSize: "13px" }}>{item.dish}</span>
+                            <span style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px", color: TOKENS.colors.textMuted }}>
+                              {item.size}
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={TOKENS.colors.textMuted} strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
                             </span>
                           </div>
                         ))}
@@ -434,7 +436,7 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
                       gap: "6px", marginTop: "12px"
                     }}
                   >
-                    <Check size={16} /> {isSawResponse ? "Confirm & Add" : "Confirm Log"}
+                    <Check size={16} /> {isSawResponse ? "Confirm & Add" : "Confirm and log"}
                   </button>
                 </div>
               )}
@@ -457,14 +459,14 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
               }
             }}
             style={{
-              width: "40px", height: "40px", borderRadius: "10px",
-              background: mode === "camera" ? TOKENS.colors.greenSoft : TOKENS.colors.bg,
+              width: "44px", height: "44px", borderRadius: "50%",
+              background: "#FFFFFF",
               border: `1px solid ${TOKENS.colors.border}`,
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", flexShrink: 0, padding: 0
             }}
           >
-            <Camera size={16} style={{ color: mode === "camera" ? TOKENS.colors.green : TOKENS.colors.textMuted }} />
+            <Camera size={17} style={{ color: TOKENS.colors.green }} />
           </button>
 
           <input

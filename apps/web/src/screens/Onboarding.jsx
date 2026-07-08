@@ -8,29 +8,29 @@ import { apiFetch } from "../lib/api.js";
 import { t } from "../lib/copy.js";
 import { RangeBar } from "../components/RangeBar.jsx";
 import { Label } from "../components/Label.jsx";
-import { Upload, ArrowRight, Check, TrendingDown, Dumbbell, ShieldAlert, Heart, Monitor, Footprints, Flame } from "lucide-react";
+import { Upload, ArrowRight, Check, TrendingDown, Dumbbell, ShieldAlert, Heart, Monitor, Footprints, Flame, Mic } from "lucide-react";
 
 export function Onboarding({ onCompleted }) {
   const [step, setStep] = useState(1);
-  
+
   // Step 1: Physical Metrics
   const [name, setName] = useState("");
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState(""); // empty by default
-  
+
   // Step 2: Goal & Dream Weight
   const [goal, setGoal] = useState("weight_loss"); // weight_loss | muscle_gain | deficiencies | longevity
   const [dreamWeight, setDreamWeight] = useState("");
 
-  // Step 3: Checkboxes
-  const [actions, setActions] = useState(["meals", "markers", "activity", "water", "medicines"]);
+  // Step 3: Checkboxes — start empty so the user actively chooses
+  const [actions, setActions] = useState([]);
 
   // Step 4: Plate & Habits
   const [diet, setDiet] = useState("vegetarian");
   const [activity, setActivity] = useState("somewhere_between");
-  
+
   // Step 5: Customize Targets
   const [customCalories, setCustomCalories] = useState(1800);
   const [customProtein, setCustomProtein] = useState(55);
@@ -107,6 +107,10 @@ export function Onboarding({ onCompleted }) {
   };
 
   const handleNextStep3 = () => {
+    if (actions.length === 0) {
+      alert("Please select at least one activity to track.");
+      return;
+    }
     setStep(4);
   };
 
@@ -295,32 +299,32 @@ export function Onboarding({ onCompleted }) {
       {/* Step 1: Body demographics */}
       {step === 1 && (
         <div>
-          <h1 style={titleStyle}>Tell us about your body</h1>
+          <h1 style={titleStyle}>Tell us about yourself</h1>
           <p style={subtitleStyle}>We use this to estimate your daily base metabolic rate.</p>
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>Your Name</label>
-            <input 
-              style={inputStyle} 
-              type="text" 
-              placeholder="Enter your name" 
-              value={name} 
-              onChange={(e) => setName(e.target.value)} 
+            <input
+              style={inputStyle}
+              type="text"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               maxLength="30"
             />
           </div>
-          
+
           <div style={formGroupStyle}>
             <label style={labelStyle}>Sex</label>
             <div style={selectionGrid}>
-              <div 
-                style={selectCard(sex === "female")} 
+              <div
+                style={selectCard(sex === "female")}
                 onClick={() => setSex("female")}
               >
                 Female
               </div>
-              <div 
-                style={selectCard(sex === "male")} 
+              <div
+                style={selectCard(sex === "male")}
                 onClick={() => setSex("male")}
               >
                 Male
@@ -330,39 +334,39 @@ export function Onboarding({ onCompleted }) {
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>Age (Years)</label>
-            <input 
-              style={inputStyle} 
-              type="number" 
+            <input
+              style={inputStyle}
+              type="number"
               placeholder="e.g. 28"
-              value={age} 
-              onChange={(e) => setAge(e.target.value)} 
-              min="1" 
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              min="1"
               max="120"
             />
           </div>
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>Height (cm)</label>
-            <input 
-              style={inputStyle} 
-              type="number" 
+            <input
+              style={inputStyle}
+              type="number"
               placeholder="e.g. 170"
-              value={height} 
-              onChange={(e) => setHeight(e.target.value)} 
-              min="100" 
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+              min="100"
               max="250"
             />
           </div>
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>Weight (kg)</label>
-            <input 
-              style={inputStyle} 
-              type="number" 
+            <input
+              style={inputStyle}
+              type="number"
               placeholder="e.g. 65"
-              value={weight} 
-              onChange={(e) => setWeight(e.target.value)} 
-              min="30" 
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              min="30"
               max="200"
             />
           </div>
@@ -382,29 +386,29 @@ export function Onboarding({ onCompleted }) {
           <div style={formGroupStyle}>
             <label style={labelStyle}>What brought you here?</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <div 
-                style={{ ...selectCard(goal === "weight_loss"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }} 
+              <div
+                style={{ ...selectCard(goal === "weight_loss"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }}
                 onClick={() => setGoal("weight_loss")}
               >
                 <TrendingDown size={18} style={{ color: goal === "weight_loss" ? TOKENS.colors.primary : TOKENS.colors.textMuted, flexShrink: 0 }} />
                 <span>Weight Loss & Management</span>
               </div>
-              <div 
-                style={{ ...selectCard(goal === "muscle_gain"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }} 
+              <div
+                style={{ ...selectCard(goal === "muscle_gain"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }}
                 onClick={() => setGoal("muscle_gain")}
               >
                 <Dumbbell size={18} style={{ color: goal === "muscle_gain" ? TOKENS.colors.primary : TOKENS.colors.textMuted, flexShrink: 0 }} />
                 <span>Muscle Gain & Fitness</span>
               </div>
-              <div 
-                style={{ ...selectCard(goal === "deficiencies"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }} 
+              <div
+                style={{ ...selectCard(goal === "deficiencies"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }}
                 onClick={() => setGoal("deficiencies")}
               >
                 <ShieldAlert size={18} style={{ color: goal === "deficiencies" ? TOKENS.colors.primary : TOKENS.colors.textMuted, flexShrink: 0 }} />
                 <span>Manage Nutrient Deficiencies</span>
               </div>
-              <div 
-                style={{ ...selectCard(goal === "longevity"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }} 
+              <div
+                style={{ ...selectCard(goal === "longevity"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }}
                 onClick={() => setGoal("longevity")}
               >
                 <Heart size={18} style={{ color: goal === "longevity" ? TOKENS.colors.primary : TOKENS.colors.textMuted, flexShrink: 0 }} />
@@ -415,13 +419,13 @@ export function Onboarding({ onCompleted }) {
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>Dream Weight (kg)</label>
-            <input 
-              style={inputStyle} 
-              type="number" 
+            <input
+              style={inputStyle}
+              type="number"
               placeholder="e.g. 60"
-              value={dreamWeight} 
-              onChange={(e) => setDreamWeight(e.target.value)} 
-              min="35" 
+              value={dreamWeight}
+              onChange={(e) => setDreamWeight(e.target.value)}
+              min="35"
               max="180"
             />
           </div>
@@ -448,7 +452,7 @@ export function Onboarding({ onCompleted }) {
             ].map((item) => {
               const checked = actions.includes(item.id);
               return (
-                <div 
+                <div
                   key={item.id}
                   onClick={() => toggleAction(item.id)}
                   style={{
@@ -500,20 +504,20 @@ export function Onboarding({ onCompleted }) {
           <div style={formGroupStyle}>
             <label style={labelStyle}>Dietary Pattern</label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
-              <div 
-                style={selectCard(diet === "vegetarian")} 
+              <div
+                style={selectCard(diet === "vegetarian")}
                 onClick={() => setDiet("vegetarian")}
               >
                 Veg
               </div>
-              <div 
-                style={selectCard(diet === "eggs_ok")} 
+              <div
+                style={selectCard(diet === "eggs_ok")}
                 onClick={() => setDiet("eggs_ok")}
               >
                 Eggs Ok
               </div>
-              <div 
-                style={selectCard(diet === "non_veg")} 
+              <div
+                style={selectCard(diet === "non_veg")}
                 onClick={() => setDiet("non_veg")}
               >
                 Non-Veg
@@ -524,22 +528,22 @@ export function Onboarding({ onCompleted }) {
           <div style={formGroupStyle}>
             <label style={labelStyle}>Activity Level</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <div 
-                style={{ ...selectCard(activity === "mostly_sitting"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }} 
+              <div
+                style={{ ...selectCard(activity === "mostly_sitting"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }}
                 onClick={() => setActivity("mostly_sitting")}
               >
                 <Monitor size={18} style={{ color: activity === "mostly_sitting" ? TOKENS.colors.primary : TOKENS.colors.textMuted, flexShrink: 0 }} />
                 <span>Mostly sitting (desk job)</span>
               </div>
-              <div 
-                style={{ ...selectCard(activity === "somewhere_between"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }} 
+              <div
+                style={{ ...selectCard(activity === "somewhere_between"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }}
                 onClick={() => setActivity("somewhere_between")}
               >
                 <Footprints size={18} style={{ color: activity === "somewhere_between" ? TOKENS.colors.primary : TOKENS.colors.textMuted, flexShrink: 0 }} />
                 <span>Somewhere between</span>
               </div>
-              <div 
-                style={{ ...selectCard(activity === "on_my_feet"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }} 
+              <div
+                style={{ ...selectCard(activity === "on_my_feet"), display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }}
                 onClick={() => setActivity("on_my_feet")}
               >
                 <Flame size={18} style={{ color: activity === "on_my_feet" ? TOKENS.colors.primary : TOKENS.colors.textMuted, flexShrink: 0 }} />
@@ -549,7 +553,7 @@ export function Onboarding({ onCompleted }) {
           </div>
 
           <button style={buttonStyle} onClick={handleNextStep4}>
-            Calculate Targets <ArrowRight size={18} />
+            Next <ArrowRight size={18} />
           </button>
         </div>
       )}
@@ -560,9 +564,33 @@ export function Onboarding({ onCompleted }) {
           <h1 style={titleStyle}>Set Daily Targets</h1>
           <p style={subtitleStyle}>These are calculated based on your Mifflin-St Jeor details, but you must review and input your preferred values.</p>
 
+          {/* Derivation info card (P1-2) */}
+          <div style={{
+            background: TOKENS.colors.bg,
+            borderRadius: TOKENS.borderRadius.input,
+            padding: "12px 14px",
+            marginBottom: "20px",
+            fontSize: "12px",
+            color: TOKENS.colors.textMuted,
+            lineHeight: 1.6,
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "8px"
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={TOKENS.colors.textFaint} strokeWidth="2" style={{ flexShrink: 0, marginTop: "2px" }}>
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" />
+            </svg>
+            <span>
+              Based on age {age}, height {height}cm, weight {weight}kg,
+              "{activity === "mostly_sitting" ? "Mostly sitting" : activity === "somewhere_between" ? "Somewhere between" : "On my feet a lot"}" activity,
+              {diet === "vegetarian" ? " Veg" : diet === "eggs_ok" ? " Eggs ok" : " Non-veg"} diet.
+            </span>
+          </div>
+
           <div style={formGroupStyle}>
             <label style={labelStyle}>Daily Calorie Target (kcal)</label>
-            <input 
+            <input
               style={inputStyle}
               type="number"
               value={customCalories}
@@ -574,7 +602,7 @@ export function Onboarding({ onCompleted }) {
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>Protein Target (g)</label>
-            <input 
+            <input
               style={inputStyle}
               type="number"
               value={customProtein}
@@ -586,7 +614,7 @@ export function Onboarding({ onCompleted }) {
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>Fibre Target (g)</label>
-            <input 
+            <input
               style={inputStyle}
               type="number"
               value={customFibre}
@@ -596,9 +624,9 @@ export function Onboarding({ onCompleted }) {
             />
           </div>
 
-          <button 
-            style={buttonStyle} 
-            onClick={handleSubmitOnboarding} 
+          <button
+            style={buttonStyle}
+            onClick={handleSubmitOnboarding}
             disabled={loading}
           >
             {loading ? "Saving Profile..." : "Confirm targets"} <ArrowRight size={18} />
@@ -606,7 +634,7 @@ export function Onboarding({ onCompleted }) {
         </div>
       )}
 
-      {/* Step 6: Lab report upload (Optional) */}
+      {/* Step 6: Voice-first close (report optional) */}
       {step === 6 && computedTargets && (
         <div>
           <h1 style={titleStyle}>Your Daily Targets</h1>
@@ -624,90 +652,114 @@ export function Onboarding({ onCompleted }) {
           }}>
             <div>
               <div style={{ fontSize: "11px", color: TOKENS.colors.textMuted }}>Calories</div>
-              <div style={{ fontSize: "18px", fontWeight: "bold", color: TOKENS.colors.primary }}>{computedTargets.calories} kcal</div>
+              <div style={{ fontSize: "18px", fontWeight: "bold", color: TOKENS.colors.primary }}>{computedTargets.calories}</div>
+              <div style={{ fontSize: "10px", color: TOKENS.colors.textMuted }}>kcal</div>
             </div>
             <div>
               <div style={{ fontSize: "11px", color: TOKENS.colors.textMuted }}>Protein</div>
-              <div style={{ fontSize: "18px", fontWeight: "bold", color: TOKENS.colors.primary }}>{computedTargets.protein_g} g</div>
+              <div style={{ fontSize: "18px", fontWeight: "bold", color: TOKENS.colors.primary }}>{computedTargets.protein_g}</div>
+              <div style={{ fontSize: "10px", color: TOKENS.colors.textMuted }}>g</div>
             </div>
             <div>
               <div style={{ fontSize: "11px", color: TOKENS.colors.textMuted }}>Fibre</div>
-              <div style={{ fontSize: "18px", fontWeight: "bold", color: TOKENS.colors.primary }}>{computedTargets.fibre_g} g</div>
+              <div style={{ fontSize: "18px", fontWeight: "bold", color: TOKENS.colors.primary }}>{computedTargets.fibre_g}</div>
+              <div style={{ fontSize: "10px", color: TOKENS.colors.textMuted }}>g</div>
             </div>
           </div>
 
+          {/* Voice-first card — the assistant is the key feature (P3-1) */}
           <div style={{
-            background: TOKENS.gradients.hero,
-            borderRadius: TOKENS.borderRadius.lg,
+            background: TOKENS.colors.primary,
+            borderRadius: TOKENS.borderRadius.lg || "16px",
             padding: "22px",
-            boxShadow: TOKENS.shadows.hero,
-            color: TOKENS.colors.textInverse,
-            textAlign: "center"
+            color: "#ffffff",
+            textAlign: "center",
+            marginBottom: "16px"
           }}>
-            <h2 style={{ fontFamily: TOKENS.fonts.assistant, fontSize: "20px", fontWeight: "normal", margin: "0 0 8px", color: TOKENS.colors.textInverse }}>
-              {t("onboarding.reportValueTitle")}
-            </h2>
-            <p style={{ fontSize: "13px", color: TOKENS.colors.textInverseMuted, margin: "0 0 18px", lineHeight: 1.45 }}>
-              {t("onboarding.reportValueBody")}
-            </p>
-
-            <div style={{ background: TOKENS.colors.surface, borderRadius: TOKENS.borderRadius.card, padding: "16px", textAlign: "left", color: TOKENS.colors.textDark }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                <div style={{ fontWeight: 600, fontSize: "14px" }}>IRON</div>
-                <Label text="low gap" type="low" />
-              </div>
-              <RangeBar value={45} rangeLow={65} rangeHigh={175} unit="µg/dL" />
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", borderTop: `1px solid ${TOKENS.colors.border}`, paddingTop: "10px" }}>
-                <Label text="food fixable" type="food_fixable" />
-                <span style={{ fontSize: "10px", color: TOKENS.colors.textMuted }}>{t("onboarding.reportPreviewCaption")}</span>
-              </div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
+              <Mic size={26} style={{ color: "#ffffff" }} />
             </div>
-
-            <label style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              marginTop: "18px",
-              padding: "13px 24px",
-              background: TOKENS.colors.accent,
-              color: TOKENS.colors.accentInk,
-              borderRadius: TOKENS.borderRadius.pill,
-              cursor: isReportUploading ? "not-allowed" : "pointer",
-              fontSize: "14px",
-              fontWeight: 700
+            <h2 style={{
+              fontFamily: TOKENS.fonts.assistant,
+              fontSize: "17px",
+              fontWeight: 600,
+              margin: "0 0 8px",
+              color: "#ffffff",
+              lineHeight: 1.4
             }}>
-              <Upload size={16} />
-              {isReportUploading ? "Reading..." : "Upload my report"}
-              <input
-                type="file"
-                accept="application/pdf,image/*"
-                style={{ display: "none" }}
-                onChange={handleReportUpload}
-                disabled={isReportUploading}
-              />
-            </label>
-
-            {uploadStatus && (
-              <div style={{ fontSize: "12px", color: TOKENS.colors.accent, marginTop: "12px", fontWeight: 500 }}>
-                {uploadStatus}
-              </div>
-            )}
+              {t("onboarding.voiceFirstTitle")}
+            </h2>
+            <p style={{ fontSize: "13px", color: "#C7DACC", margin: "0 0 14px", lineHeight: 1.45 }}>
+              {t("onboarding.voiceFirstBody")}
+            </p>
+            <div style={{
+              background: "rgba(255,255,255,0.08)",
+              borderRadius: "10px",
+              padding: "12px"
+            }}>
+              <p style={{ fontSize: "12px", color: "#EAF2EC", margin: 0, lineHeight: 1.6 }}>
+                Try saying "2 rotis and dal for lunch", "3 glasses of water", or "took my vitamin D" — Aarogya understands and logs it for you.
+              </p>
+            </div>
           </div>
 
-          <button
-            style={{
-              ...buttonStyle,
-              background: "transparent",
-              color: TOKENS.colors.textMuted,
-              border: `1px solid ${TOKENS.colors.border}`,
-              marginTop: "16px"
-            }}
-            onClick={handleSkipReport}
-          >
-            {t("onboarding.reportSkip")}
+          {/* Primary CTA — start with the assistant */}
+          <button style={buttonStyle} onClick={handleSkipReport}>
+            <Mic size={16} />
+            {t("onboarding.startCta")}
           </button>
+
+          {/* Optional, secondary: lab report upload */}
+          <label style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            padding: "12px",
+            background: "transparent",
+            color: TOKENS.colors.textMuted,
+            border: `1px solid ${TOKENS.colors.border}`,
+            borderRadius: TOKENS.borderRadius.input,
+            cursor: isReportUploading ? "not-allowed" : "pointer",
+            fontSize: "13px",
+            fontWeight: 500,
+            width: "100%",
+            boxSizing: "border-box",
+            marginTop: "12px"
+          }}>
+            <Upload size={14} />
+            {isReportUploading ? "Reading..." : t("onboarding.reportOptional")}
+            <input
+              type="file"
+              accept="application/pdf,image/*"
+              style={{ display: "none" }}
+              onChange={handleReportUpload}
+              disabled={isReportUploading}
+            />
+          </label>
+
+          {uploadStatus && (
+            <div style={{ fontSize: "12px", color: TOKENS.colors.primary, marginTop: "10px", fontWeight: 500, textAlign: "center" }}>
+              {uploadStatus}
+            </div>
+          )}
         </div>
       )}
+
+      {/* Step progress indicator — bottom of every step (P3-7) */}
+      <div style={{ marginTop: "28px", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+        <div style={{ display: "flex", gap: "5px" }}>
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <span key={i} style={{
+              height: "6px", borderRadius: i <= step ? "3px" : "50%",
+              background: i <= step ? TOKENS.colors.primary : TOKENS.colors.border,
+              width: i <= step ? "16px" : "6px",
+              transition: "all 0.3s ease"
+            }} />
+          ))}
+        </div>
+        <div style={{ fontSize: "11px", color: TOKENS.colors.textMuted }}>Step {step} of 6</div>
+      </div>
     </div>
   );
 }

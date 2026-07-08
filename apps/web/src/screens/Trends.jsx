@@ -172,7 +172,7 @@ export function Trends() {
               onClick={() => setPeriod(p)}
               style={{
                 padding: "5px 14px", fontSize: "12px", fontWeight: 500, border: "none", cursor: "pointer",
-                background: period === p ? TOKENS.colors.ink : "transparent",
+                background: period === p ? TOKENS.colors.green : "transparent",
                 color: period === p ? "#FFFFFF" : TOKENS.colors.textMuted,
                 fontFamily: TOKENS.fonts.data,
                 transition: "all 0.2s ease"
@@ -270,30 +270,47 @@ export function Trends() {
               </div>
             </div>
 
-            {/* paired bars */}
-            <div style={{ display: "flex", alignItems: "flex-end", gap: "6px", height: "90px" }}>
-              {energyData.map((d, i) => {
-                const maxKcal = Math.max(2000, ...energyData.map(day => Math.max(day.inKcal, day.burned)));
-                const inH = maxKcal > 0 ? Math.round((d.inKcal / maxKcal) * 100) : 0;
-                const burnH = maxKcal > 0 ? Math.round((d.burned / maxKcal) * 100) : 0;
-                
-                // Represent zero height with tiny 3px placeholder so chart structure is clear
-                const showInH = d.inKcal > 0 ? inH : 4;
-                const showBurnH = d.burned > 0 ? burnH : 4;
-                const inColor = d.inKcal > 0 ? TOKENS.colors.green : TOKENS.colors.border;
-                const burnColor = d.burned > 0 ? TOKENS.colors.amber : TOKENS.colors.border;
-
+            {/* paired bars — or empty state when no data */}
+            {(() => {
+              const hasAnyData = energyData.some(d => d.inKcal > 0 || d.burned > 0);
+              if (!hasAnyData) {
                 return (
-                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "3px" }}>
-                    <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "72px" }}>
-                      <div style={{ width: "8px", height: `${showInH}%`, borderRadius: "3px 3px 1px 1px", background: inColor, transition: "height 0.4s ease" }} />
-                      <div style={{ width: "8px", height: `${showBurnH}%`, borderRadius: "3px 3px 1px 1px", background: burnColor, transition: "height 0.4s ease" }} />
+                  <div style={{ textAlign: "center", padding: "18px 0 8px" }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={TOKENS.colors.textMuted} strokeWidth="1.6" style={{ marginBottom: "8px" }}>
+                      <path d="M3 17l6-6 4 4 8-8"/>
+                    </svg>
+                    <p style={{ fontSize: "12px", color: TOKENS.colors.textMuted, margin: "0 0 8px" }}>
+                      Log a few meals this week to see your energy pattern.
+                    </p>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "9px", color: TOKENS.colors.textMuted, borderTop: `1px solid ${TOKENS.colors.border}`, paddingTop: "8px" }}>
+                      {energyData.map((d, i) => <span key={i}>{d.day}</span>)}
                     </div>
-                    <span style={{ fontSize: "11px", color: TOKENS.colors.textMuted }}>{d.day}</span>
                   </div>
                 );
-              })}
-            </div>
+              }
+              return (
+                <div style={{ display: "flex", alignItems: "flex-end", gap: "6px", height: "90px" }}>
+                  {energyData.map((d, i) => {
+                    const maxKcal = Math.max(2000, ...energyData.map(day => Math.max(day.inKcal, day.burned)));
+                    const inH = maxKcal > 0 ? Math.round((d.inKcal / maxKcal) * 100) : 0;
+                    const burnH = maxKcal > 0 ? Math.round((d.burned / maxKcal) * 100) : 0;
+                    const showInH = d.inKcal > 0 ? inH : 4;
+                    const showBurnH = d.burned > 0 ? burnH : 4;
+                    const inColor = d.inKcal > 0 ? TOKENS.colors.green : TOKENS.colors.border;
+                    const burnColor = d.burned > 0 ? TOKENS.colors.amber : TOKENS.colors.border;
+                    return (
+                      <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "3px" }}>
+                        <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "72px" }}>
+                          <div style={{ width: "8px", height: `${showInH}%`, borderRadius: "3px 3px 1px 1px", background: inColor, transition: "height 0.4s ease" }} />
+                          <div style={{ width: "8px", height: `${showBurnH}%`, borderRadius: "3px 3px 1px 1px", background: burnColor, transition: "height 0.4s ease" }} />
+                        </div>
+                        <span style={{ fontSize: "11px", color: TOKENS.colors.textMuted }}>{d.day}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Noticed this week */}

@@ -91,7 +91,7 @@ export function Home({ onOpenAssistant, onNavigateToHealth }) {
             margin: 0,
             color: TOKENS.colors.ink
           }}>
-            {getGreeting()}, {userName}
+            {getGreeting()}, {userName || "there"}
           </h1>
         </div>
         <div style={{
@@ -102,7 +102,12 @@ export function Home({ onOpenAssistant, onNavigateToHealth }) {
           fontSize: "18px", fontWeight: 500, color: TOKENS.colors.green,
           flexShrink: 0
         }}>
-          {(userName || "P").charAt(0)}
+          {userName ? userName.charAt(0).toUpperCase() : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TOKENS.colors.green} strokeWidth="2">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
+            </svg>
+          )}
         </div>
       </div>
 
@@ -168,7 +173,7 @@ export function Home({ onOpenAssistant, onNavigateToHealth }) {
         <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "14px" }}>
           <div>
             <span style={{ fontFamily: TOKENS.fonts.assistant, fontSize: "30px", fontWeight: 500, color: TOKENS.colors.green }}>{caloriesIn}</span>
-            <span style={{ fontSize: "12px", color: TOKENS.colors.textMuted, marginLeft: "4px" }}>in</span>
+            <span style={{ fontSize: "12px", color: TOKENS.colors.textMuted, marginLeft: "4px" }}>kcal</span>
           </div>
           {burnedKcal > 0 && (
             <div>
@@ -198,13 +203,13 @@ export function Home({ onOpenAssistant, onNavigateToHealth }) {
         </div>
       </div>
 
-      {/* ── 3.4 YOUR PRIORITIES ── */}
-      <div className="a-rise" style={{ marginBottom: "20px" }}>
-        <div style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", color: TOKENS.colors.textFaint, letterSpacing: "0.5px", marginBottom: "10px" }}>
-          Your Priorities
-        </div>
+      {/* ── 3.4 YOUR PRIORITIES — only once there's real data behind it ── */}
+      {(hasReport || hasMedicines) && (
+        <div className="a-rise" style={{ marginBottom: "20px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", color: TOKENS.colors.textFaint, letterSpacing: "0.5px", marginBottom: "10px" }}>
+            Your Priorities
+          </div>
 
-        {hasReport || hasMedicines ? (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
             {/* Marker priority (e.g. Iron) */}
             {hasReport && flaggedMarkers[0] && (
@@ -256,40 +261,8 @@ export function Home({ onOpenAssistant, onNavigateToHealth }) {
               />
             )}
           </div>
-        ) : (
-          /* Invitation card when no report & no medicines */
-          <div style={{
-            background: TOKENS.colors.greenSoft,
-            borderRadius: TOKENS.borderRadius.card,
-            padding: "20px",
-            textAlign: "center"
-          }}>
-            <p style={{
-              fontFamily: TOKENS.fonts.assistant,
-              fontSize: "14px",
-              color: TOKENS.colors.ink,
-              margin: "0 0 14px",
-              lineHeight: 1.5
-            }}>
-              {t("home.invitationState")}
-            </p>
-            <button
-              onClick={() => onNavigateToHealth && onNavigateToHealth()}
-              className="aa-btn"
-              style={{
-                padding: "10px 20px",
-                background: TOKENS.colors.green,
-                color: "#fff",
-                fontSize: "13px",
-                fontWeight: 600,
-                borderRadius: "10px"
-              }}
-            >
-              Upload Report
-            </button>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── 3.5 TRACKER TILES ── */}
       <div className="a-rise" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px" }}>
@@ -369,6 +342,39 @@ export function Home({ onOpenAssistant, onNavigateToHealth }) {
           </div>
         )}
       </div>
+
+      {/* ── 3.7 REPORT FOOTNOTE — quiet secondary invitation, bottom of page ── */}
+      {!hasReport && (
+        <div className="a-rise" style={{
+          marginTop: "24px",
+          background: TOKENS.colors.surface,
+          border: `1px solid ${TOKENS.cardBorder}`,
+          borderRadius: TOKENS.borderRadius.cardCompact,
+          padding: "14px 16px",
+          display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px"
+        }}>
+          <p style={{
+            fontFamily: TOKENS.fonts.assistant,
+            fontSize: "12.5px",
+            color: TOKENS.colors.textMuted,
+            margin: 0,
+            lineHeight: 1.5
+          }}>
+            {t("home.reportFooterLine")}
+          </p>
+          <button
+            onClick={() => onNavigateToHealth && onNavigateToHealth()}
+            style={{
+              background: "none", border: "none", padding: 0,
+              display: "flex", alignItems: "center", gap: "2px",
+              fontSize: "12px", fontWeight: 600, color: TOKENS.colors.green,
+              cursor: "pointer", fontFamily: TOKENS.fonts.data, flexShrink: 0
+            }}
+          >
+            Health <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

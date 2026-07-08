@@ -91,6 +91,48 @@ export function Health({ onOpenAssistant }) {
         {t("health.subtitle")}
       </p>
 
+      {/* ── Quick log — speak or type anything health-related ── */}
+      <div className="a-rise" style={{
+        background: TOKENS.colors.surface,
+        border: `1px solid ${TOKENS.cardBorder}`,
+        borderRadius: TOKENS.borderRadius.card,
+        padding: "16px 20px 14px",
+        boxShadow: TOKENS.shadows.card,
+        marginBottom: "16px"
+      }}>
+        <div style={{ fontSize: "15px", fontWeight: 600, color: TOKENS.colors.ink, marginBottom: "4px" }}>
+          Log anything
+        </div>
+        <p style={{ fontFamily: TOKENS.fonts.assistant, fontSize: "12px", color: TOKENS.colors.textMuted, margin: "0 0 12px", lineHeight: 1.5 }}>
+          Speak or type — supplements, medicines, symptoms, doctor visits.
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          {[
+            { label: "Supplement", hint: "e.g. started vitamin D 1000 IU daily" },
+            { label: "Medicine", hint: "e.g. metformin 500mg twice a day" },
+            { label: "Symptom", hint: "e.g. mild headache since morning" },
+            { label: "Doctor visit", hint: "e.g. saw Dr. Rao, advised more fibre" },
+            { label: "Other", hint: "Tell Aarogya anything about your health" }
+          ].map((chip) => (
+            <button
+              key={chip.label}
+              onClick={() => onOpenAssistant("text", chip.hint)}
+              style={{
+                display: "flex", alignItems: "center", gap: "5px",
+                background: TOKENS.colors.greenSoft,
+                color: TOKENS.colors.green,
+                border: "none", borderRadius: "16px",
+                padding: "7px 12px", fontSize: "12px", fontWeight: 500,
+                cursor: "pointer", fontFamily: TOKENS.fonts.data
+              }}
+            >
+              <Plus size={12} />
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ── 5.1 Markers card ── */}
       {hasReport && (
         <div className="a-rise" style={{
@@ -165,31 +207,36 @@ export function Health({ onOpenAssistant }) {
         </div>
       )}
 
-      {/* ── 5.2 Medicines & supplements ── */}
-      {hasMedicines && (
-        <div className="a-rise" style={{
-          background: TOKENS.colors.surface,
-          border: `1px solid ${TOKENS.cardBorder}`,
-          borderRadius: TOKENS.borderRadius.card,
-          padding: "18px 20px 14px",
-          boxShadow: TOKENS.shadows.card,
-          marginBottom: "16px"
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <span style={{ fontSize: "15px", fontWeight: 600, color: TOKENS.colors.ink }}>Medicines & supplements</span>
-            <button
-              onClick={() => onOpenAssistant("text", "e.g. snap your prescription or type the medicine")}
-              style={{
-                background: "none", border: "none", fontSize: "12px",
-                fontWeight: 500, color: TOKENS.colors.green, cursor: "pointer",
-                fontFamily: TOKENS.fonts.data, padding: 0
-              }}
-            >
-              + add
-            </button>
-          </div>
+      {/* ── 5.2 Medicines & supplements — always visible so logging is discoverable ── */}
+      <div className="a-rise" style={{
+        background: TOKENS.colors.surface,
+        border: `1px solid ${TOKENS.cardBorder}`,
+        borderRadius: TOKENS.borderRadius.card,
+        padding: "18px 20px 14px",
+        boxShadow: TOKENS.shadows.card,
+        marginBottom: "16px"
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+          <span style={{ fontSize: "15px", fontWeight: 600, color: TOKENS.colors.ink }}>Medicines & supplements</span>
+          <button
+            onClick={() => onOpenAssistant("text", "e.g. snap your prescription or type the medicine")}
+            style={{
+              background: "none", border: "none", fontSize: "12px",
+              fontWeight: 500, color: TOKENS.colors.green, cursor: "pointer",
+              fontFamily: TOKENS.fonts.data, padding: 0
+            }}
+          >
+            + add
+          </button>
+        </div>
 
-          {medicines.map((med) => {
+        {!hasMedicines && (
+          <p style={{ fontSize: "12px", color: TOKENS.colors.textMuted, margin: "0 0 4px", lineHeight: 1.5 }}>
+            Nothing tracked yet. Snap a prescription or type a medicine or supplement to start.
+          </p>
+        )}
+
+        {hasMedicines && medicines.map((med) => {
             const taken = med.taken_today && med.taken_today[0];
             return (
               <div
@@ -227,18 +274,17 @@ export function Health({ onOpenAssistant }) {
             );
           })}
 
-          {/* Disclaimer */}
-          <p style={{
-            fontFamily: TOKENS.fonts.assistant,
-            fontSize: "11px",
-            color: TOKENS.colors.textFaint,
-            margin: "12px 0 0",
-            lineHeight: 1.5
-          }}>
-            {t("health.medicineDisclaimer")}
-          </p>
-        </div>
-      )}
+        {/* Disclaimer */}
+        <p style={{
+          fontFamily: TOKENS.fonts.assistant,
+          fontSize: "11px",
+          color: TOKENS.colors.textFaint,
+          margin: "12px 0 0",
+          lineHeight: 1.5
+        }}>
+          {t("health.medicineDisclaimer")}
+        </p>
+      </div>
 
       {/* ── 5.3 Bottom bento ── */}
       <div className="a-rise" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
@@ -323,34 +369,37 @@ export function Health({ onOpenAssistant }) {
         </div>
       </div>
 
-      {/* ── No report invitation ── */}
+      {/* ── No report invitation — quiet, secondary feature at the bottom ── */}
       {!hasReport && (
         <div className="a-rise" style={{
-          background: TOKENS.colors.greenSoft,
+          background: TOKENS.colors.surface,
+          border: `1px solid ${TOKENS.cardBorder}`,
           borderRadius: TOKENS.borderRadius.card,
-          padding: "20px",
+          padding: "16px 20px",
           textAlign: "center",
           marginBottom: "20px"
         }}>
           <p style={{
             fontFamily: TOKENS.fonts.assistant,
-            fontSize: "14px",
-            color: TOKENS.colors.ink,
-            margin: "0 0 14px",
+            fontSize: "13px",
+            color: TOKENS.colors.textMuted,
+            margin: "0 0 12px",
             lineHeight: 1.5
           }}>
             {t("home.invitationState")}
           </p>
           <button
             onClick={() => setShowFlags(true)}
-            className="aa-btn"
             style={{
-              padding: "10px 20px",
-              background: TOKENS.colors.green,
-              color: "#fff",
+              padding: "9px 18px",
+              background: "transparent",
+              color: TOKENS.colors.green,
+              border: `1px solid ${TOKENS.colors.green}`,
               fontSize: "13px",
               fontWeight: 600,
-              borderRadius: "10px"
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontFamily: TOKENS.fonts.data
             }}
           >
             Upload Report

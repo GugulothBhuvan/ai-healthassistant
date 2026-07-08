@@ -244,38 +244,45 @@ export function App() {
                   >
                     <Heart size={18} /> Health
                   </button>
-                  <button
-                    onClick={() => setActiveTab("profile")}
-                    style={sidebarBtnStyle(activeTab === "profile")}
-                  >
-                    <User size={18} /> You
-                  </button>
                 </div>
               </div>
 
-              {/* Persistent Sidebar Composer Trigger */}
+              {/* Profile pinned at the bottom of the sidebar */}
               <button
-                id="sidebar-mic"
-                onClick={() => openAssistant("text")}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  background: TOKENS.gradients.fab,
-                  color: "#ffffff",
-                  border: "none",
-                  borderRadius: TOKENS.borderRadius.input,
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px"
-                }}
+                onClick={() => setActiveTab("profile")}
+                style={sidebarBtnStyle(activeTab === "profile")}
               >
-                <Mic size={18} /> Speak or Type
+                <User size={18} /> You
               </button>
             </div>
+
+            {/* WIDE VIEW: Floating voice CTA — visible on every screen */}
+            <button
+              id="sidebar-mic"
+              className="wide-fab"
+              onClick={() => openAssistant("text")}
+              style={{
+                position: "fixed",
+                bottom: "28px",
+                right: "28px",
+                zIndex: 900,
+                padding: "14px 22px",
+                background: TOKENS.gradients.fab,
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "999px",
+                fontSize: "14px",
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontFamily: TOKENS.fonts.data,
+                boxShadow: "0 6px 20px rgba(23, 89, 74, 0.35)"
+              }}
+            >
+              <Mic size={18} /> Speak or Type
+            </button>
 
             {/* Core Content Area */}
             <div style={{
@@ -364,10 +371,12 @@ export function App() {
             <style>{`
               @media (max-width: 640px) {
                 .wide-sidebar { display: none !important; }
+                .wide-fab { display: none !important; }
                 .narrow-bottom-nav { display: flex !important; }
               }
               @media (min-width: 641px) {
                 .wide-sidebar { display: flex !important; }
+                .wide-fab { display: flex !important; }
                 .narrow-bottom-nav { display: none !important; }
               }
             `}</style>

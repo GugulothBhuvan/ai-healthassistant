@@ -39,7 +39,7 @@ export function AppStateProvider({ children }) {
   const [intakeToday, setIntakeToday] = useState(null);
   const [proactiveLine, setProactiveLine] = useState("");
   const [diet, setDiet] = useState("vegetarian");
-  const [userName, setUserName] = useState("there");
+  const [userName, setUserName] = useState("");
 
   const fetchAll = useCallback(async () => {
     try {

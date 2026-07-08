@@ -50,6 +50,9 @@ export function Profile({ onReset, onReplayTour }) {
         await supabase.from("profiles").delete().eq("id", user.id);
 
         // Trigger reset callback to go back to onboarding
+        // Clear local storage flags so guided tour and other settings reset
+        localStorage.removeItem("aarogya_tour_seen");
+        localStorage.removeItem("aarogya_onboarding_done");
         onReset();
       }
     } catch (err) {
@@ -103,20 +106,20 @@ export function Profile({ onReset, onReplayTour }) {
             
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", fontSize: "14px" }}>
               <div>
-                <span style={{ color: TOKENS.colors.textMuted, display: "block", fontSize: "11px", textTransform: "uppercase" }}>Diet</span>
+                <span style={{ color: "#6B685E", display: "block", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em" }}>Diet</span>
                 <strong style={{ textTransform: "capitalize" }}>{diet.replace("_", " ")}</strong>
               </div>
               <div>
-                <span style={{ color: TOKENS.colors.textMuted, display: "block", fontSize: "11px", textTransform: "uppercase" }}>Gender</span>
-                <strong style={{ textTransform: "capitalize" }}>{profile.sex || "female"}</strong>
+                <span style={{ color: "#6B685E", display: "block", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em" }}>Gender</span>
+                <strong style={{ textTransform: "capitalize" }}>{profile.sex || "—"}</strong>
               </div>
               <div>
-                <span style={{ color: TOKENS.colors.textMuted, display: "block", fontSize: "11px", textTransform: "uppercase" }}>Age</span>
-                <strong>{profile.age || "30"} Years</strong>
+                <span style={{ color: "#6B685E", display: "block", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em" }}>Age</span>
+                <strong>{profile.age || "—"} {profile.age ? "Years" : ""}</strong>
               </div>
               <div>
-                <span style={{ color: TOKENS.colors.textMuted, display: "block", fontSize: "11px", textTransform: "uppercase" }}>Height</span>
-                <strong>{profile.height_cm || "170"} cm</strong>
+                <span style={{ color: "#6B685E", display: "block", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em" }}>Height</span>
+                <strong>{profile.height_cm || "—"} {profile.height_cm ? "cm" : ""}</strong>
               </div>
             </div>
           </div>
