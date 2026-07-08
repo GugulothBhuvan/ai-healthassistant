@@ -15,14 +15,14 @@ export function Onboarding({ onCompleted }) {
   
   // Step 1: Physical Metrics
   const [name, setName] = useState("");
-  const [height, setHeight] = useState(170);
-  const [weight, setWeight] = useState(65);
-  const [age, setAge] = useState(30);
-  const [sex, setSex] = useState("female");
+  const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
+  const [age, setAge] = useState("");
+  const [sex, setSex] = useState(""); // empty by default
   
   // Step 2: Goal & Dream Weight
   const [goal, setGoal] = useState("weight_loss"); // weight_loss | muscle_gain | deficiencies | longevity
-  const [dreamWeight, setDreamWeight] = useState(60);
+  const [dreamWeight, setDreamWeight] = useState("");
 
   // Step 3: Checkboxes
   const [actions, setActions] = useState(["meals", "markers", "activity", "water", "medicines"]);
@@ -68,13 +68,33 @@ export function Onboarding({ onCompleted }) {
 
   const handleNextStep1 = () => {
     if (!name || !name.trim()) {
-      alert("Please enter your name to personalize your Aarogya profile.");
+      alert("Please enter your name.");
+      return;
+    }
+    if (!sex) {
+      alert("Please select your sex.");
+      return;
+    }
+    if (!age || Number(age) <= 0 || Number(age) > 120) {
+      alert("Please enter a valid age between 1 and 120.");
+      return;
+    }
+    if (!height || Number(height) <= 100 || Number(height) > 250) {
+      alert("Please enter a valid height between 100 and 250 cm.");
+      return;
+    }
+    if (!weight || Number(weight) <= 30 || Number(weight) > 200) {
+      alert("Please enter a valid weight between 30 and 200 kg.");
       return;
     }
     setStep(2);
   };
 
   const handleNextStep2 = () => {
+    if (!dreamWeight || Number(dreamWeight) <= 35 || Number(dreamWeight) > 180) {
+      alert("Please enter a valid dream weight between 35 and 180 kg.");
+      return;
+    }
     setStep(3);
   };
 
@@ -313,6 +333,7 @@ export function Onboarding({ onCompleted }) {
             <input 
               style={inputStyle} 
               type="number" 
+              placeholder="e.g. 28"
               value={age} 
               onChange={(e) => setAge(e.target.value)} 
               min="1" 
@@ -325,6 +346,7 @@ export function Onboarding({ onCompleted }) {
             <input 
               style={inputStyle} 
               type="number" 
+              placeholder="e.g. 170"
               value={height} 
               onChange={(e) => setHeight(e.target.value)} 
               min="100" 
@@ -337,6 +359,7 @@ export function Onboarding({ onCompleted }) {
             <input 
               style={inputStyle} 
               type="number" 
+              placeholder="e.g. 65"
               value={weight} 
               onChange={(e) => setWeight(e.target.value)} 
               min="30" 
@@ -395,6 +418,7 @@ export function Onboarding({ onCompleted }) {
             <input 
               style={inputStyle} 
               type="number" 
+              placeholder="e.g. 60"
               value={dreamWeight} 
               onChange={(e) => setDreamWeight(e.target.value)} 
               min="35" 
