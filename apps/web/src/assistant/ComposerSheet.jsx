@@ -1,13 +1,15 @@
-// ComposerSheet component: conversational assistant drawer, input composition, and parse overrides
+// ComposerSheet component — v3: adds CAMERA state (§6.1) + medicine intent display
+// Conversational assistant drawer, input composition, parse overrides, photo input
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { TOKENS } from "../tokens.js";
 import { useAssistant } from "./useAssistant.js";
 import { Voice } from "../components/Voice.jsx";
-import { X, Send, Sparkles, Check, AlertTriangle, MessageCircleOff, Loader } from "lucide-react";
+import { X, Send, Check, AlertTriangle, MessageCircleOff, Loader, Camera, Mic, Image as ImageIcon, Sparkles } from "lucide-react";
 import { t } from "../lib/copy.js";
+import { useToast } from "../ui/Feedback.jsx";
 
-export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
+export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "text", initialPlaceholder = "" }) {
   const {
     loading,
     transcript,
@@ -17,11 +19,40 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
     confirm,
     clear
   } = useAssistant();
+  const toast = useToast();
 
   const [inputText, setInputText] = useState("");
-  const [sizeOverride, setSizeOverride] = useState(null); // null means use item-specific parsed size
+  const [sizeOverride, setSizeOverride] = useState(null);
+  const [mode, setMode] = useState("text"); // text | camera
+  const [capturedImage, setCapturedImage] = useState(null); // { dataUrl, thumbnail }
+  const fileInputRef = useRef(null);
+  const textInputRef = useRef(null);
+
+  // Sync initialMode when sheet opens
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      if (initialPlaceholder) setInputText("");
+    }
+  }, [isOpen, initialMode, initialPlaceholder]);
+
+  // Focus text input when opening in text mode
+  useEffect(() => {
+    if (isOpen && mode === "text" && textInputRef.current && !loading && !parsedResponse) {
+      setTimeout(() => textInputRef.current?.focus(), 100);
+    }
+  }, [isOpen, mode, loading, parsedResponse]);
 
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    onClose();
+    clear();
+    setMode("text");
+    setCapturedImage(null);
+    setInputText("");
+    setSizeOverride(null);
+  };
 
   const handleSubmitText = (e) => {
     e.preventDefault();
@@ -34,19 +65,34 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
     exchange("", base64Audio);
   };
 
+  const handleImageSelected = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      setCapturedImage({ dataUrl, name: file.name });
+
+      // Send to assistant as image-based exchange
+      // Extract base64 portion for API
+      const base64 = dataUrl.split(",")[1];
+      exchange("", "", base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleConfirmLog = async () => {
     try {
       const res = await confirm(sizeOverride);
       if (res) {
-        // Trigger toast notifications or home state updates
         if (onLogCommitted) {
           onLogCommitted(res);
         }
-        onClose();
-        clear();
+        handleClose();
       }
     } catch (err) {
-      alert("Failed to confirm log: " + err.message);
+      toast("Couldn't save that log. Please try again.", { tone: "error" });
     }
   };
 
@@ -57,17 +103,14 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
   const suggestions = [
     "do roti aur paneer ki sabji",
     "drank 2 glasses of water",
-    "weight today 64.5 kg",
-    "khaya chawal and chicken curry"
+    "took my D3",
+    "30 min walk"
   ];
 
   const backdropStyle = {
     position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: "rgba(26, 37, 30, 0.4)",
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: "rgba(26, 33, 38, 0.4)",
     backdropFilter: "blur(4px)",
     zIndex: 1000,
     display: "flex",
@@ -85,7 +128,7 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
     boxShadow: "0 -8px 32px rgba(0, 0, 0, 0.15)",
     boxSizing: "border-box",
     fontFamily: TOKENS.fonts.data,
-    color: TOKENS.colors.textDark,
+    color: TOKENS.colors.ink,
     display: "flex",
     flexDirection: "column",
     gap: "16px",
@@ -99,7 +142,7 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
     border: `1px solid ${TOKENS.colors.border}`,
     borderRadius: TOKENS.borderRadius.input,
     background: TOKENS.colors.bg,
-    color: TOKENS.colors.textDark,
+    color: TOKENS.colors.ink,
     outline: "none"
   };
 
@@ -128,17 +171,25 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
     cursor: "pointer"
   });
 
+  // Determine if response is from camera/image
+  const isSawResponse = capturedImage && parsedResponse;
+
   return (
-    <div style={backdropStyle} onClick={() => { onClose(); clear(); }}>
+    <div style={backdropStyle} onClick={handleClose}>
       <div style={sheetStyle} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Sparkles size={18} style={{ color: TOKENS.colors.primary }} />
-            <h3 style={{ fontSize: "16px", fontWeight: 600, margin: 0 }}>Log Assistant</h3>
+            {mode === "camera"
+              ? <Camera size={18} style={{ color: TOKENS.colors.primary }} />
+              : <Mic size={18} style={{ color: TOKENS.colors.primary }} />
+            }
+            <h3 style={{ fontSize: "16px", fontWeight: 600, margin: 0 }}>
+              {mode === "camera" ? "Snap & Log" : "Log Assistant"}
+            </h3>
           </div>
-          <button 
-            onClick={() => { onClose(); clear(); }}
+          <button
+            onClick={handleClose}
             style={{ background: "none", border: "none", color: TOKENS.colors.textMuted, cursor: "pointer" }}
           >
             <X size={20} />
@@ -150,20 +201,56 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
           {loading && (
             <div style={{ textAlign: "center", padding: "20px 0" }}>
               <Loader style={{ animation: "spin 1.5s linear infinite", color: TOKENS.colors.primary, margin: "0 auto 12px auto" }} size={24} />
-              <div style={{ fontSize: "13px", color: TOKENS.colors.textMuted }}>Parsing your input...</div>
+              <div style={{ fontSize: "13px", color: TOKENS.colors.textMuted }}>
+                {capturedImage ? "Reading that…" : "Parsing your input..."}
+              </div>
             </div>
           )}
 
           {errorMsg && (
-            <div style={{ background: "#FFF5F5", border: `1px solid ${TOKENS.colors.border}`, borderRadius: "12px", padding: "16px", color: TOKENS.colors.doctorsTerritory, fontSize: "13px" }}>
+            <div style={{ background: TOKENS.v3.redSoft, border: `1px solid ${TOKENS.colors.border}`, borderRadius: "12px", padding: "16px", color: TOKENS.v3.red, fontSize: "13px" }}>
               {errorMsg}
             </div>
           )}
 
-          {!loading && !errorMsg && !parsedResponse && (
+          {/* Camera mode — file picker */}
+          {!loading && !errorMsg && !parsedResponse && mode === "camera" && (
+            <div style={{ textAlign: "center" }}>
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  border: `2px dashed ${TOKENS.colors.border}`,
+                  borderRadius: TOKENS.borderRadius.card,
+                  padding: "32px 20px",
+                  cursor: "pointer",
+                  background: TOKENS.colors.bg,
+                  transition: "border-color 0.2s ease"
+                }}
+              >
+                <Camera size={32} style={{ color: TOKENS.colors.textMuted, marginBottom: "8px" }} />
+                <p style={{ fontSize: "14px", color: TOKENS.colors.textMuted, margin: 0 }}>
+                  Snap or choose a photo
+                </p>
+                <p style={{ fontSize: "11px", color: TOKENS.colors.textFaint, margin: "4px 0 0" }}>
+                  Food, prescription, or medicine strip
+                </p>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                style={{ display: "none" }}
+                onChange={handleImageSelected}
+              />
+            </div>
+          )}
+
+          {/* Text mode — suggestions */}
+          {!loading && !errorMsg && !parsedResponse && mode === "text" && (
             <div>
               <p style={{ fontSize: "13px", color: TOKENS.colors.textMuted, margin: "0 0 12px 0" }}>
-                Log your meals, weight, or water intake. Say it in Hinglish or English:
+                Log your meals, medicine, activity, or water:
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {suggestions.map((suggestion, idx) => (
@@ -176,7 +263,7 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
                       border: `1px solid ${TOKENS.colors.border}`,
                       borderRadius: "8px",
                       fontSize: "12px",
-                      color: TOKENS.colors.textDark,
+                      color: TOKENS.colors.ink,
                       cursor: "pointer",
                       textAlign: "left"
                     }}
@@ -191,29 +278,36 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
           {/* Response Bubble & Confirm Path */}
           {!loading && parsedResponse && (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              {/* Voice transcript echo */}
-              <div style={{ fontSize: "12px", color: TOKENS.colors.textMuted, background: TOKENS.colors.bg, padding: "8px 12px", borderRadius: "8px", fontStyle: "italic" }}>
-                Heard: "{parsedResponse.heard}"
+              {/* Transcript echo — SAW for camera, HEARD for voice/text */}
+              <div style={{
+                fontSize: "12px", color: TOKENS.colors.textMuted,
+                background: TOKENS.colors.bg, padding: "8px 12px",
+                borderRadius: "8px", fontStyle: "italic",
+                display: "flex", alignItems: "center", gap: "8px"
+              }}>
+                {isSawResponse && capturedImage?.dataUrl && (
+                  <img
+                    src={capturedImage.dataUrl}
+                    alt="captured"
+                    style={{ width: "44px", height: "44px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }}
+                  />
+                )}
+                <span>{isSawResponse ? "Saw" : "Heard"}: "{parsedResponse.heard}"</span>
               </div>
 
-              {/* Decline Notification */}
+              {/* Assistant Conversational/Decline Response */}
               {parsedResponse.decline ? (
                 <div style={{
-                  display: "flex",
-                  gap: "10px",
-                  alignItems: "flex-start",
-                  background: `${TOKENS.colors.textMuted}10`,
-                  padding: "16px",
-                  borderRadius: "12px"
+                  display: "flex", gap: "10px", alignItems: "flex-start",
+                  background: TOKENS.colors.primaryLight,
+                  padding: "16px", borderRadius: "12px",
+                  border: `1px solid rgba(23, 89, 74, 0.08)`
                 }}>
-                  <MessageCircleOff size={20} style={{ color: TOKENS.colors.textMuted, flexShrink: 0, marginTop: "2px" }} />
+                  <Sparkles size={18} style={{ color: TOKENS.colors.primary, flexShrink: 0, marginTop: "2px" }} />
                   <p style={{
                     fontFamily: TOKENS.fonts.assistant,
-                    fontSize: "15px",
-                    fontStyle: "italic",
-                    margin: 0,
-                    color: TOKENS.colors.textDark,
-                    lineHeight: "1.4"
+                    fontSize: "14.5px", fontStyle: "italic",
+                    margin: 0, color: TOKENS.colors.ink, lineHeight: "1.5"
                   }}>
                     {parsedResponse.decline}
                   </p>
@@ -227,7 +321,7 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
                       <div style={{ fontSize: "11px", color: TOKENS.colors.textMuted, textTransform: "uppercase", marginBottom: "6px" }}>Parsed Foods</div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                         {parsedResponse.food.map((item, idx) => (
-                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F5F8F6", padding: "10px 14px", borderRadius: "8px" }}>
+                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: TOKENS.colors.greenSoft, padding: "10px 14px", borderRadius: "8px" }}>
                             <div>
                               <strong style={{ fontSize: "14px" }}>{item.dish}</strong>
                               <span style={{ fontSize: "11px", color: TOKENS.colors.textMuted, marginLeft: "8px" }}>
@@ -245,41 +339,66 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
                       <div style={{ marginTop: "14px" }}>
                         <div style={{ fontSize: "11px", color: TOKENS.colors.textMuted, marginBottom: "6px" }}>Adjust Portion Size (Overrides all)</div>
                         <div style={{ display: "flex", gap: "8px" }}>
-                          <button 
-                            type="button"
-                            onClick={() => setSizeOverride("small")} 
-                            style={chipStyle(sizeOverride === "small")}
-                          >
-                            Small Katori
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={() => setSizeOverride("medium")} 
-                            style={chipStyle(sizeOverride === "medium" || (!sizeOverride && parsedResponse.food[0]?.size === "medium"))}
-                          >
-                            Medium Katori
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={() => setSizeOverride("large")} 
-                            style={chipStyle(sizeOverride === "large")}
-                          >
-                            Large Katori
-                          </button>
+                          <button type="button" onClick={() => setSizeOverride("small")} style={chipStyle(sizeOverride === "small")}>Small Katori</button>
+                          <button type="button" onClick={() => setSizeOverride("medium")} style={chipStyle(sizeOverride === "medium" || (!sizeOverride && parsedResponse.food[0]?.size === "medium"))}>Medium Katori</button>
+                          <button type="button" onClick={() => setSizeOverride("large")} style={chipStyle(sizeOverride === "large")}>Large Katori</button>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Water confirmation message */}
+                  {/* Medicine confirmation */}
+                  {parsedResponse.medicine && (
+                    <div style={{
+                      background: TOKENS.colors.greenSoft,
+                      padding: "12px 14px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px"
+                    }}>
+                      <span style={{ color: TOKENS.colors.green, fontWeight: "bold" }}>💊</span>
+                      <div>
+                        <div style={{ fontWeight: 500 }}>
+                          {parsedResponse.medicine.name}
+                          {parsedResponse.medicine.dose_text ? ` · ${parsedResponse.medicine.dose_text}` : ""}
+                        </div>
+                        <div style={{ fontSize: "11px", color: TOKENS.colors.textFaint, marginTop: "2px" }}>
+                          {parsedResponse.medicine.source === "prescription"
+                            ? t("home.fromPrescription")
+                            : t("home.youAddedThis")
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Activity confirmation */}
+                  {parsedResponse.activity && (
+                    <div style={{
+                      background: TOKENS.colors.greenSoft,
+                      padding: "12px 14px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px"
+                    }}>
+                      <span style={{ color: TOKENS.colors.green, fontWeight: "bold" }}>🚶</span>
+                      <span>Activity: <strong>{parsedResponse.activity.label}</strong> · ~{parsedResponse.activity.kcal_est} kcal</span>
+                    </div>
+                  )}
+
+                  {/* Water confirmation */}
                   {parsedResponse.water_glasses && parsedResponse.water_glasses > 0 ? (
-                    <div style={{ background: `${TOKENS.colors.water}10`, padding: "12px", borderRadius: "8px", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ color: TOKENS.colors.water, fontWeight: "bold" }}>●</span>
+                    <div style={{ background: TOKENS.colors.amberSoft, padding: "12px", borderRadius: "8px", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ color: TOKENS.colors.amber, fontWeight: "bold" }}>●</span>
                       <span>Water Intake: <strong>{parsedResponse.water_glasses} glasses</strong></span>
                     </div>
                   ) : null}
 
-                  {/* Weight confirmation message */}
+                  {/* Weight confirmation */}
                   {parsedResponse.weight_kg && parsedResponse.weight_kg > 0 ? (
                     <div style={{ background: `${TOKENS.colors.weight}10`, padding: "12px", borderRadius: "8px", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
                       <span style={{ color: TOKENS.colors.weight, fontWeight: "bold" }}>●</span>
@@ -287,43 +406,35 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
                     </div>
                   ) : null}
 
-                  {/* Unknown dishes warning tray (AC3) */}
+                  {/* Unknown dishes warning tray */}
                   {parsedResponse.unknown && parsedResponse.unknown.length > 0 && (
                     <div style={{
-                      display: "flex",
-                      gap: "8px",
-                      background: "#FAF6EF",
-                      border: `1px solid ${TOKENS.colors.foodFixable}30`,
-                      borderRadius: "8px",
-                      padding: "12px"
+                      display: "flex", gap: "8px",
+                      background: TOKENS.v3.amberSoft,
+                      border: `1px solid ${TOKENS.colors.amber}30`,
+                      borderRadius: "8px", padding: "12px"
                     }}>
-                      <AlertTriangle size={18} style={{ color: TOKENS.colors.foodFixable, flexShrink: 0, marginTop: "2px" }} />
-                      <div style={{ fontSize: "12px", color: TOKENS.colors.textDark, lineHeight: "1.4" }}>
-                        Unrecognized dishes: <strong>{parsedResponse.unknown.join(", ")}</strong>. We'll log standard estimates, or you can tap to rewrite.
+                      <AlertTriangle size={18} style={{ color: TOKENS.colors.amber, flexShrink: 0, marginTop: "2px" }} />
+                      <div style={{ fontSize: "12px", color: TOKENS.colors.ink, lineHeight: "1.4" }}>
+                        Unrecognized dishes: <strong>{parsedResponse.unknown.join(", ")}</strong>. We'll log standard estimates.
                       </div>
                     </div>
                   )}
 
                   {/* Submit Button */}
-                  <button 
+                  <button
                     onClick={handleConfirmLog}
                     style={{
-                      width: "100%",
-                      padding: "14px",
+                      width: "100%", padding: "14px",
                       background: TOKENS.colors.primary,
-                      color: "#ffffff",
-                      border: "none",
+                      color: "#ffffff", border: "none",
                       borderRadius: TOKENS.borderRadius.input,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px",
-                      marginTop: "12px"
+                      fontWeight: 600, cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      gap: "6px", marginTop: "12px"
                     }}
                   >
-                    <Check size={16} /> Confirm Log
+                    <Check size={16} /> {isSawResponse ? "Confirm & Add" : "Confirm Log"}
                   </button>
                 </div>
               )}
@@ -333,21 +444,45 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted }) {
 
         {/* Input Bar */}
         <form onSubmit={handleSubmitText} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {/* Camera icon inside input bar */}
+          <button
+            type="button"
+            onClick={() => {
+              if (mode === "camera") {
+                setMode("text");
+              } else {
+                setMode("camera");
+                setCapturedImage(null);
+                clear();
+              }
+            }}
+            style={{
+              width: "40px", height: "40px", borderRadius: "10px",
+              background: mode === "camera" ? TOKENS.colors.greenSoft : TOKENS.colors.bg,
+              border: `1px solid ${TOKENS.colors.border}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", flexShrink: 0, padding: 0
+            }}
+          >
+            <Camera size={16} style={{ color: mode === "camera" ? TOKENS.colors.green : TOKENS.colors.textMuted }} />
+          </button>
+
           <input
+            ref={textInputRef}
             type="text"
             style={textInputStyle}
-            placeholder="Type: '2 roti paneer sabji' or 'vajan 72kg'"
+            placeholder={initialPlaceholder || "Type: '2 roti paneer sabji' or 'took my D3'"}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            disabled={loading}
+            disabled={loading || mode === "camera"}
           />
-          
+
           {inputText.trim() ? (
             <button type="submit" style={sendBtnStyle} disabled={loading}>
               <Send size={18} />
             </button>
           ) : (
-            <Voice onAudioCaptured={handleAudioCaptured} isBlocked={loading} />
+            <Voice onAudioCaptured={handleAudioCaptured} isBlocked={loading || mode === "camera"} />
           )}
         </form>
       </div>

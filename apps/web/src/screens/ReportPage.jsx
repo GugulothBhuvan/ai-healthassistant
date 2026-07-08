@@ -7,9 +7,14 @@ import { supabase } from "../lib/supabase.js";
 import { RangeBar } from "../components/RangeBar.jsx";
 import { Label } from "../components/Label.jsx";
 import { t } from "../lib/copy.js";
+import { useToast, useConfirm } from "../ui/Feedback.jsx";
 import { Upload, ShieldCheck, Trash2, Loader, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { useAppState } from "../lib/useAppState.jsx";
 
 export function ReportPage() {
+  const toast = useToast();
+  const confirmDialog = useConfirm();
+  const appState = useAppState();
   const [activeReportId, setActiveReportId] = useState(null);
   const [reportState, setReportState] = useState(null); // completed, processing, etc.
   const [consentChecked, setConsentChecked] = useState(false);
@@ -68,6 +73,9 @@ export function ReportPage() {
           clearInterval(interval);
           setReportState(data);
           setStatusMsg("");
+          if (appState && appState.refetch) {
+            appState.refetch();
+          }
         } else if (data.status === "failed") {
           clearInterval(interval);
           setReportState({ status: "failed" });
@@ -84,7 +92,7 @@ export function ReportPage() {
 
   const handleFileUpload = async (e, demoName = null) => {
     if (!consentChecked) {
-      alert("You must consent to proceed with upload.");
+      toast("Please give consent before uploading.", { tone: "error" });
       return;
     }
 
@@ -120,7 +128,7 @@ export function ReportPage() {
       startPolling(res.report_id);
     } catch (err) {
       console.error("Upload failed:", err);
-      alert("Upload failed: " + err.message);
+      toast("Upload failed. Please try a clearer copy.", { tone: "error" });
     } finally {
       setUploading(false);
     }
@@ -129,20 +137,30 @@ export function ReportPage() {
   // DPDP Delete on Demand
   const handleDeleteReport = async () => {
     if (!activeReportId) return;
-    if (!confirm("Are you sure you want to permanently delete your linked report and all its parsed markers?")) return;
+    const ok = await confirmDialog({
+      title: "Remove this report?",
+      body: "Your linked report and all its parsed markers will be permanently deleted.",
+      confirmLabel: "Delete",
+      cancelLabel: "Keep",
+      tone: "danger"
+    });
+    if (!ok) return;
 
     try {
       // Delete from Supabase client using active RLS
       const { error } = await supabase.from("reports").delete().eq("id", activeReportId);
       if (error) throw error;
-      
+
       setActiveReportId(null);
       setReportState(null);
       setStatusMsg("");
-      alert("Report successfully deleted from our records.");
+      toast("Report deleted from our records.", { tone: "success" });
+      if (appState && appState.refetch) {
+        appState.refetch();
+      }
     } catch (err) {
       console.error("Deletion failed:", err);
-      alert("Failed to delete report: " + err.message);
+      toast("Couldn't delete the report. Please try again.", { tone: "error" });
     }
   };
 

@@ -7,6 +7,7 @@ import { supabase } from "../db.js";
 import { llm } from "../ai/krutrim.js";
 import { INTENT_SYSTEM_PROMPT } from "../ai/prompts/intent.js";
 import { FOOD_PARSE_SYSTEM_PROMPT } from "../ai/prompts/foodParse.js";
+import { CONVERSATION_SYSTEM_PROMPT } from "../ai/prompts/conversation.js";
 import { speechToText } from "../ai/sarvam.js";
 import { getDishNutrients, calculateMarkerDeltas, markersDb } from "../engine/markers.js";
 import { scaleNutrients } from "../engine/portions.js";
@@ -85,27 +86,29 @@ router.post("/exchange", async (req, res, next) => {
         // Return friendly error
         return res.status(502).json({ error: "Assistant parsing failed. Try phrasing your meal differently (e.g. 'had 2 roti and dal')." });
       }
-    } else if (classification.intent === "report") {
-      parsedResult = {
-        heard: queryText,
-        food: [],
-        water_glasses: null,
-        weight_kg: null,
-        unknown: [],
-        iron_relevant: false,
-        decline: "I can help analyze report files uploaded via the Report tab, or tell you what markers are flagged. To check a new report, please upload the PDF/photo directly."
-      };
     } else {
-      // Intent "other"
-      parsedResult = {
-        heard: queryText,
-        food: [],
-        water_glasses: null,
-        weight_kg: null,
-        unknown: [],
-        iron_relevant: false,
-        decline: "I only log things — food, water, weight. I cannot diagnose or give clinical advice."
-      };
+      // General conversation, report Q&A, or general chat queries
+      try {
+        parsedResult = await llm(
+          "parse",
+          [
+            { role: "system", content: CONVERSATION_SYSTEM_PROMPT },
+            { role: "user", content: `Query: "${queryText}"` }
+          ],
+          ParsedExchangeSchema
+        );
+      } catch (err) {
+        console.error("Krutrim Conversation LLM failed:", err.message);
+        parsedResult = {
+          heard: queryText,
+          food: [],
+          water_glasses: null,
+          weight_kg: null,
+          unknown: [],
+          iron_relevant: false,
+          decline: "I am here to help you understand your nutrition and logs. For clinical concerns, please consult a doctor."
+        };
+      }
     }
 
     // Ensure we keep the transcript heard

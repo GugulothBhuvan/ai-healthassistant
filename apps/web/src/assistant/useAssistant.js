@@ -1,4 +1,4 @@
-// assistant state management hook
+// assistant state management hook — v3: adds image exchange + medicine/activity intents
 
 import { useState } from "react";
 import { apiFetch } from "../lib/api.js";
@@ -6,20 +6,22 @@ import { apiFetch } from "../lib/api.js";
 export function useAssistant() {
   const [loading, setLoading] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [parsedResponse, setParsedResponse] = useState(null); // { heard, food, water_glasses, weight_kg, unknown, iron_relevant, decline }
+  const [parsedResponse, setParsedResponse] = useState(null);
+  // Extended shape: { heard, food, water_glasses, weight_kg, unknown, iron_relevant, decline, medicine, activity }
   const [confirmToken, setConfirmToken] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const exchange = async (text = "", audioBase64 = "") => {
+  const exchange = async (text = "", audioBase64 = "", imageBase64 = "") => {
     setLoading(true);
     setErrorMsg("");
     setParsedResponse(null);
-    
+
     try {
       const payload = {};
       if (text) payload.text = text;
       if (audioBase64) payload.audio = audioBase64;
-      
+      if (imageBase64) payload.image = imageBase64;
+
       const res = await apiFetch("/assistant/exchange", {
         method: "POST",
         body: payload
@@ -51,7 +53,7 @@ export function useAssistant() {
           size: sizeOverride
         }
       });
-      
+
       // Clear exchange states after successful commit
       setParsedResponse(null);
       setConfirmToken("");

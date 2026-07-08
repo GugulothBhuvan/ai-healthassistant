@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { Mic, Square, Loader } from "lucide-react";
 import { TOKENS } from "../tokens.js";
+import { useToast } from "../ui/Feedback.jsx";
 
 /**
  * Microphone component using browser MediaRecorder.
@@ -12,13 +13,14 @@ export function Voice({ onAudioCaptured, isBlocked = false }) {
   const [status, setStatus] = useState("idle"); // idle, recording, processing
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const toast = useToast();
 
   const startRecording = async () => {
     if (isBlocked || status === "processing") return;
     
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert("Audio recording is not supported in this browser.");
+        toast("Voice isn't supported here. Please type instead.", { tone: "error" });
         return;
       }
 
@@ -57,7 +59,7 @@ export function Voice({ onAudioCaptured, isBlocked = false }) {
         };
         reader.onerror = () => {
           setStatus("idle");
-          alert("Failed to compile audio capture.");
+          toast("Couldn't process that recording. Please try again.", { tone: "error" });
         };
         reader.readAsDataURL(audioBlob);
       };
@@ -68,7 +70,7 @@ export function Voice({ onAudioCaptured, isBlocked = false }) {
     } catch (err) {
       console.error("Accessing microphone failed:", err);
       setStatus("idle");
-      alert("Could not access microphone: " + err.message);
+      toast("Couldn't access the mic. Check permissions.", { tone: "error" });
     }
   };
 

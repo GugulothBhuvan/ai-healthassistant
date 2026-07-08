@@ -1,10 +1,10 @@
--- Database Initialization Migration for Aarogya
+-- Database Initialization Migration for Aarogya (Idempotent / Re-runnable)
 
 -- 1. Enable uuid-ossp extension
 create extension if not exists "uuid-ossp";
 
 -- 2. Profiles Table
-create table public.profiles (
+create table if not exists public.profiles (
   id uuid primary key references auth.users on delete cascade,
   height_cm int not null,
   weight_kg int not null,
@@ -17,7 +17,7 @@ create table public.profiles (
 );
 
 -- 3. Reports Table
-create table public.reports (
+create table if not exists public.reports (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users on delete cascade,
   uploaded_at timestamptz default now() not null,
@@ -28,7 +28,7 @@ create table public.reports (
 );
 
 -- 4. Report Markers Table
-create table public.report_markers (
+create table if not exists public.report_markers (
   id uuid primary key default gen_random_uuid(),
   report_id uuid not null references public.reports on delete cascade,
   marker_id text not null, -- e.g., 'iron', 'vitamin_d', 'hba1c'
@@ -43,7 +43,7 @@ create table public.report_markers (
 );
 
 -- 5. Logs Table
-create table public.logs (
+create table if not exists public.logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users on delete cascade,
   ts timestamptz default now() not null,
@@ -56,7 +56,7 @@ create table public.logs (
 );
 
 -- 6. Nudges Table
-create table public.nudges (
+create table if not exists public.nudges (
   user_id uuid not null references auth.users on delete cascade,
   sent_on date default current_date not null,
   template_id text not null,
@@ -74,32 +74,39 @@ alter table public.nudges enable row level security;
 -- ---- RLS Policies ----
 
 -- Profiles Policies
+drop policy if exists "Users can read their own profile" on public.profiles;
 create policy "Users can read their own profile"
   on public.profiles for select
   using (auth.uid() = id);
 
+drop policy if exists "Users can insert their own profile" on public.profiles;
 create policy "Users can insert their own profile"
   on public.profiles for insert
   with check (auth.uid() = id);
 
+drop policy if exists "Users can update their own profile" on public.profiles;
 create policy "Users can update their own profile"
   on public.profiles for update
   using (auth.uid() = id);
 
 -- Reports Policies
+drop policy if exists "Users can view their own reports" on public.reports;
 create policy "Users can view their own reports"
   on public.reports for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert their own reports" on public.reports;
 create policy "Users can insert their own reports"
   on public.reports for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can delete their own reports" on public.reports;
 create policy "Users can delete their own reports"
   on public.reports for delete
   using (auth.uid() = user_id);
 
 -- Report Markers Policies
+drop policy if exists "Users can view markers from their own reports" on public.report_markers;
 create policy "Users can view markers from their own reports"
   on public.report_markers for select
   using (
@@ -108,6 +115,7 @@ create policy "Users can view markers from their own reports"
     )
   );
 
+drop policy if exists "Users can insert markers into their own reports" on public.report_markers;
 create policy "Users can insert markers into their own reports"
   on public.report_markers for insert
   with check (
@@ -117,31 +125,38 @@ create policy "Users can insert markers into their own reports"
   );
 
 -- Logs Policies
+drop policy if exists "Users can view their own logs" on public.logs;
 create policy "Users can view their own logs"
   on public.logs for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert their own logs" on public.logs;
 create policy "Users can insert their own logs"
   on public.logs for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update their own logs" on public.logs;
 create policy "Users can update their own logs"
   on public.logs for update
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can delete their own logs" on public.logs;
 create policy "Users can delete their own logs"
   on public.logs for delete
   using (auth.uid() = user_id);
 
 -- Nudges Policies
+drop policy if exists "Users can view their own nudges" on public.nudges;
 create policy "Users can view their own nudges"
   on public.nudges for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert/update their own nudges" on public.nudges;
 create policy "Users can insert/update their own nudges"
   on public.nudges for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update their own nudges" on public.nudges;
 create policy "Users can update their own nudges"
   on public.nudges for update
   using (auth.uid() = user_id);
@@ -151,6 +166,7 @@ insert into storage.buckets (id, name, public)
 values ('reports', 'reports', false)
 on conflict (id) do nothing;
 
+drop policy if exists "Users can access their own report files" on storage.objects;
 create policy "Users can access their own report files"
   on storage.objects for all
   using (bucket_id = 'reports' and (storage.foldername(name))[1] = auth.uid()::text)

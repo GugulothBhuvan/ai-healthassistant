@@ -4,11 +4,15 @@ import React, { useEffect, useState } from "react";
 import { TOKENS } from "../tokens.js";
 import { apiFetch } from "../lib/api.js";
 import { supabase } from "../lib/supabase.js";
+import { useToast, useConfirm } from "../ui/Feedback.jsx";
+import { Button } from "../ui/primitives.jsx";
 import { User, Flame, Compass, RefreshCw } from "lucide-react";
 
 export function Profile({ onReset }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
+  const confirmDialog = useConfirm();
 
   const fetchProfile = async () => {
     try {
@@ -27,7 +31,14 @@ export function Profile({ onReset }) {
   }, []);
 
   const handleResetProfile = async () => {
-    if (!confirm("Are you sure you want to delete your profile, logs, and linked reports? This will reset the app.")) return;
+    const ok = await confirmDialog({
+      title: "Reset everything?",
+      body: "Your profile, logs, and linked reports will be deleted and the app will start over.",
+      confirmLabel: "Reset",
+      cancelLabel: "Cancel",
+      tone: "danger"
+    });
+    if (!ok) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -43,7 +54,7 @@ export function Profile({ onReset }) {
       }
     } catch (err) {
       console.error("Resetting profile failed:", err);
-      alert("Failed to reset profile.");
+      toast("Couldn't reset your profile. Please try again.", { tone: "error" });
     }
   };
 
@@ -146,26 +157,9 @@ export function Profile({ onReset }) {
 
       {/* Reset System Button */}
       <div style={{ marginTop: "24px" }}>
-        <button
-          onClick={handleResetProfile}
-          style={{
-            width: "100%",
-            padding: "14px",
-            border: `1px solid ${TOKENS.colors.border}`,
-            color: TOKENS.colors.doctorsTerritory,
-            borderRadius: TOKENS.borderRadius.input,
-            fontWeight: 600,
-            fontSize: "14px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-            background: "#FFF5F5"
-          }}
-        >
+        <Button variant="danger" size="lg" full onClick={handleResetProfile}>
           <RefreshCw size={16} /> Reset Profile & Settings
-        </button>
+        </Button>
       </div>
     </div>
   );
