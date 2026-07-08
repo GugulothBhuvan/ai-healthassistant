@@ -146,6 +146,7 @@ export function Home({ onOpenAssistant, onNavigateToHealth }) {
           <span style={{ fontSize: "13.5px", fontWeight: 600, color: TOKENS.colors.ink }}>Today</span>
           <div style={{ display: "flex", gap: "8px" }}>
             <button
+              id="btn-camera"
               onClick={() => onOpenAssistant("camera")}
               style={quickActionBtnStyle}
               aria-label="Camera"
@@ -153,6 +154,7 @@ export function Home({ onOpenAssistant, onNavigateToHealth }) {
               <Camera size={15} style={{ color: TOKENS.colors.ink }} />
             </button>
             <button
+              id="btn-add"
               onClick={() => onOpenAssistant("text")}
               style={quickActionBtnStyle}
               aria-label="Add"
@@ -348,8 +350,22 @@ export function Home({ onOpenAssistant, onNavigateToHealth }) {
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: "center", padding: "16px", color: TOKENS.colors.textMuted, fontSize: "13px" }}>
-            Nothing logged yet today. Use the composer below.
+          <div style={{
+            textAlign: "center",
+            padding: "24px 16px",
+            color: TOKENS.colors.textMuted,
+            fontSize: "13px",
+            background: TOKENS.colors.greenSoft,
+            borderRadius: TOKENS.borderRadius.cardCompact,
+            lineHeight: 1.6
+          }}>
+            <div style={{ marginBottom: "8px", display: "flex", justifyContent: "center" }}>
+              <UtensilsCrossed size={28} style={{ color: TOKENS.colors.green, opacity: 0.7 }} />
+            </div>
+            <div style={{ fontFamily: TOKENS.fonts.assistant, fontWeight: 500, color: TOKENS.colors.ink, marginBottom: "4px" }}>
+              Nothing logged yet
+            </div>
+            <div>Tap the <strong style={{ color: TOKENS.colors.green }}>mic button</strong> below or type to log your first meal.</div>
           </div>
         )}
       </div>

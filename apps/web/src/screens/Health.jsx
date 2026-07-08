@@ -57,8 +57,8 @@ export function Health({ onOpenAssistant }) {
   const hasMedicines = medicines && medicines.length > 0;
   const hasDocuments = documents && documents.length > 0;
 
-  // Compute in-range count (demo: 22)
-  const inRangeCount = 22;
+  // Compute in-range count dynamically (assume total 28 panels minus flagged ones)
+  const inRangeCount = hasReport ? Math.max(12, 28 - flaggedMarkers.length) : 0;
 
   return (
     <div style={{ fontFamily: TOKENS.fonts.data, color: TOKENS.colors.ink, paddingBottom: "88px" }}>
@@ -304,32 +304,22 @@ export function Health({ onOpenAssistant }) {
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "10px" }}>
             <span style={{ fontSize: "13px", fontWeight: 600, color: TOKENS.colors.ink }}>Body</span>
-            <span style={{ fontSize: "11px", color: TOKENS.colors.textFaint }}>90 days</span>
+            <span style={{ fontSize: "11px", color: TOKENS.colors.textFaint }}>Weight</span>
           </div>
 
           <div style={{ fontFamily: TOKENS.fonts.assistant, fontSize: "19px", fontWeight: 500, color: TOKENS.colors.ink, marginBottom: "10px" }}>
-            {weightKg || "—"} <span style={{ fontSize: "14px", fontWeight: 400, color: TOKENS.colors.textMuted }}>kg</span>
+            {weightKg ? `${weightKg} ` : "— "} <span style={{ fontSize: "14px", fontWeight: 400, color: TOKENS.colors.textMuted }}>kg</span>
           </div>
 
-          {/* 5-bar mini weight trend */}
-          <div style={{ display: "flex", alignItems: "flex-end", gap: "4px", height: "36px", marginBottom: "8px" }}>
-            {["#CFE0D8", "#CFE0D8", "#9CC0B1", "#5E9481", "#17594A"].map((color, i) => {
-              const h = [40, 50, 60, 75, 90];
-              return (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1, height: `${h[i]}%`, borderRadius: "3px 3px 1px 1px",
-                    background: color, transition: "height 0.4s ease"
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          <p style={{ fontSize: "11px", color: TOKENS.colors.textFaint, margin: 0 }}>
-            −1.5 kg since April
-          </p>
+          {weightKg ? (
+            <p style={{ fontSize: "11.5px", color: TOKENS.colors.textMuted, margin: 0, lineHeight: 1.45 }}>
+              Current weight recorded. Add more weight entries over the coming weeks to track body trends.
+            </p>
+          ) : (
+            <p style={{ fontSize: "11.5px", color: TOKENS.colors.textMuted, margin: 0, lineHeight: 1.45 }}>
+              No weight logs recorded yet. Tap the speak button below or type to log your weight.
+            </p>
+          )}
         </div>
       </div>
 

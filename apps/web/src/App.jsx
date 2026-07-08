@@ -16,6 +16,7 @@ import Trends from "./screens/Trends.jsx";
 import Health from "./screens/Health.jsx";
 import Profile from "./screens/Profile.jsx";
 import ComposerSheet from "./assistant/ComposerSheet.jsx";
+import GuidedTour from "./screens/GuidedTour.jsx";
 
 // Import icons
 import { Home as HomeIcon, TrendingUp, Heart, User, Mic, AlertCircle, Sparkles } from "lucide-react";
@@ -31,6 +32,7 @@ export function App() {
   const [composerMode, setComposerMode] = useState("text"); // text | camera
   const [composerPlaceholder, setComposerPlaceholder] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showTour, setShowTour] = useState(false);
   const toast = useToast();
 
   // Authenticate session and check profile status
@@ -44,6 +46,10 @@ export function App() {
       if (data.profile_completed) {
         setTargets(data.targets);
         setOnboardingCompleted(true);
+        // Show guided tour for returning users who haven't seen it
+        if (!localStorage.getItem("aarogya_tour_seen")) {
+          setTimeout(() => setShowTour(true), 800);
+        }
       } else {
         setOnboardingCompleted(false);
       }
@@ -76,6 +82,10 @@ export function App() {
     setOnboardingCompleted(true);
     setActiveTab("home");
     toast(t("toast.plainConfirm"), { tone: "success" });
+    // Show guided tour if not seen before
+    if (!localStorage.getItem("aarogya_tour_seen")) {
+      setTimeout(() => setShowTour(true), 600); // brief delay so DOM renders
+    }
   };
 
   const handleLogCommitted = (confirmRes) => {
@@ -90,6 +100,9 @@ export function App() {
   const handleReset = () => {
     setOnboardingCompleted(false);
     setTargets(null);
+    setShowTour(false);
+    // Clear tour flag so it replays after re-onboarding
+    localStorage.removeItem("aarogya_tour_seen");
   };
 
   const openAssistant = (mode = "text", placeholder = "") => {
@@ -218,12 +231,14 @@ export function App() {
                     <HomeIcon size={18} /> Home
                   </button>
                   <button
+                    id="sidebar-trends"
                     onClick={() => setActiveTab("trends")}
                     style={sidebarBtnStyle(activeTab === "trends")}
                   >
                     <TrendingUp size={18} /> Trends
                   </button>
                   <button
+                    id="sidebar-health"
                     onClick={() => setActiveTab("health")}
                     style={sidebarBtnStyle(activeTab === "health")}
                   >
@@ -240,6 +255,7 @@ export function App() {
 
               {/* Persistent Sidebar Composer Trigger */}
               <button
+                id="sidebar-mic"
                 onClick={() => openAssistant("text")}
                 style={{
                   width: "100%",
@@ -272,7 +288,18 @@ export function App() {
               {activeTab === "home" && <Home onOpenAssistant={openAssistant} onNavigateToHealth={() => setActiveTab("health")} />}
               {activeTab === "trends" && <Trends />}
               {activeTab === "health" && <Health onOpenAssistant={openAssistant} />}
-              {activeTab === "profile" && <Profile onReset={handleReset} />}
+              {activeTab === "profile" && (
+                <Profile
+                  onReset={handleReset}
+                  onReplayTour={() => {
+                    localStorage.removeItem("aarogya_tour_seen");
+                    setActiveTab("home");
+                    setTimeout(() => {
+                      setShowTour(true);
+                    }, 150);
+                  }}
+                />
+              )}
             </div>
 
             {/* 2. NARROW VIEW: Bottom Navigation Bar (<640px) */}
@@ -296,6 +323,7 @@ export function App() {
                   return (
                     <button
                       key="fab"
+                      id="fab-mic"
                       onClick={() => openAssistant("text")}
                       style={{
                         width: "56px",
@@ -321,6 +349,7 @@ export function App() {
                 return (
                   <button
                     key={item.id}
+                    id={`tab-${item.id}`}
                     onClick={() => setActiveTab(item.id)}
                     style={navBtnStyle(isActive)}
                   >
@@ -351,6 +380,11 @@ export function App() {
               initialMode={composerMode}
               initialPlaceholder={composerPlaceholder}
             />
+
+            {/* Guided Tour (post-onboarding spotlight walkthrough) */}
+            {showTour && (
+              <GuidedTour onComplete={() => setShowTour(false)} />
+            )}
           </div>
         </AppStateProvider>
       )}

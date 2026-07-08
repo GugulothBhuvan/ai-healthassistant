@@ -16,7 +16,14 @@ router.post("/onboarding", async (req, res, next) => {
     }
     
     const profile = parseResult.data;
-    const targets = calculateTargets(profile);
+    const baseTargets = profile.custom_targets || calculateTargets(profile);
+    const targets = {
+      ...baseTargets,
+      name: profile.name,
+      dream_weight_kg: profile.dream_weight_kg,
+      goal: profile.goal,
+      actions: profile.actions
+    };
     
     // Save to Supabase profiles table
     const { error } = await supabase
@@ -171,8 +178,42 @@ router.get("/home", async (req, res, next) => {
       intake_today,
       logs_today,
       flagged_markers,
-      proactive_line
+      proactive_line,
+      name: targets?.name || "there"
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /logs?start=YYYY-MM-DD&end=YYYY-MM-DD
+router.get("/logs", async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { start, end } = req.query;
+    if (!start || !end) {
+      return res.status(400).json({ error: "start and end parameters are required" });
+    }
+    
+    // Parse and set boundaries
+    const startDate = new Date(start);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(end);
+    endDate.setHours(23, 59, 59, 999);
+
+    const { data: logs, error } = await supabase
+      .from("logs")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("ts", startDate.toISOString())
+      .lte("ts", endDate.toISOString())
+      .order("ts", { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    res.json({ logs });
   } catch (err) {
     next(err);
   }
@@ -217,6 +258,7 @@ router.get("/week", async (req, res, next) => {
       days.push({
         date: dateString,
         calories: 0,
+        burned: 0,
         protein_g: 0,
         carbs_g: 0,
         fat_g: 0,
@@ -232,6 +274,8 @@ router.get("/week", async (req, res, next) => {
       if (dayData) {
         if (log.type === "water") {
           dayData.water_glasses += log.parse.water_glasses || 0;
+        } else if (log.type === "activity") {
+          dayData.burned += (log.parse.kcal || log.parse.kcal_est || 0);
         } else if (log.type === "food") {
           if (log.parse && log.parse.food) {
             log.parse.food.forEach(item => {
@@ -260,6 +304,7 @@ router.get("/week", async (req, res, next) => {
     
     days.forEach(day => {
       day.calories = Math.round(day.calories);
+      day.burned = Math.round(day.burned);
       day.protein_g = Math.round(day.protein_g * 10) / 10;
       day.carbs_g = Math.round(day.carbs_g * 10) / 10;
       day.fat_g = Math.round(day.fat_g * 10) / 10;

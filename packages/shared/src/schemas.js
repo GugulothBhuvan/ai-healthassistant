@@ -66,12 +66,21 @@ export const ConfirmResponseSchema = z.object({
 
 // ---- onboarding / targets ----
 export const OnboardingProfileSchema = z.object({
+  name: z.string().optional().nullable(),
   height_cm: z.number().int().positive(),
   weight_kg: z.number().int().positive(),
   age: z.number().int().positive(),
   sex: z.enum(["male", "female"]),
   diet: z.enum(["vegetarian", "eggs_ok", "non_veg"]),
   activity: z.enum(["mostly_sitting", "somewhere_between", "on_my_feet"]),
+  dream_weight_kg: z.number().positive().optional().nullable(),
+  goal: z.string().optional().nullable(),
+  actions: z.array(z.string()).optional().nullable(),
+  custom_targets: z.object({
+    calories: z.number(),
+    protein_g: z.number(),
+    fibre_g: z.number()
+  }).optional().nullable()
 });
 
 export const TargetsSchema = z.object({

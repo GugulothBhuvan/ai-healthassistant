@@ -8,7 +8,7 @@ import { useToast, useConfirm } from "../ui/Feedback.jsx";
 import { Button } from "../ui/primitives.jsx";
 import { User, Flame, Compass, RefreshCw } from "lucide-react";
 
-export function Profile({ onReset }) {
+export function Profile({ onReset, onReplayTour }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
@@ -155,8 +155,13 @@ export function Profile({ onReset }) {
         </div>
       )}
 
-      {/* Reset System Button */}
-      <div style={{ marginTop: "24px" }}>
+      {/* Replay Tour & Reset Controls */}
+      <div style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        {onReplayTour && (
+          <Button variant="secondary" size="lg" full onClick={onReplayTour}>
+            <Compass size={16} /> Replay Guided Tour
+          </Button>
+        )}
         <Button variant="danger" size="lg" full onClick={handleResetProfile}>
           <RefreshCw size={16} /> Reset Profile & Settings
         </Button>
