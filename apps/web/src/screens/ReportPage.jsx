@@ -364,13 +364,13 @@ export function ReportPage() {
                 margin: "8px 0 16px 4px",
                 fontStyle: "italic"
               }}>
-                {reportState.flags.length > 0 
+                {reportState.flags && reportState.flags.length > 0 
                   ? t("flags.headerProportion") 
                   : "All markers parsed are in range."}
               </div>
 
               {/* Flags list */}
-              {reportState.flags.map((flag) => {
+              {reportState.flags && reportState.flags.map((flag) => {
                 const isExpanded = !!expandedMarkers[flag.marker_id];
                 
                 // Get standard diet guidance based on user profile if available, or static fallback
