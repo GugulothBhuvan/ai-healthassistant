@@ -8,10 +8,10 @@ import { apiFetch } from "../lib/api.js";
 import { t } from "../lib/copy.js";
 import { RangeBar } from "../components/RangeBar.jsx";
 import { Label } from "../components/Label.jsx";
-import { Upload, ArrowRight, Check, TrendingDown, Dumbbell, ShieldAlert, Heart, Monitor, Footprints, Flame, Mic } from "lucide-react";
+import { Upload, ArrowRight, Check, TrendingDown, Dumbbell, ShieldAlert, Heart, Monitor, Footprints, Flame, Mic, Lock, Activity } from "lucide-react";
 
 export function Onboarding({ onCompleted }) {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(-1);
 
   // Step 1: Physical Metrics
   const [name, setName] = useState("");
@@ -296,6 +296,102 @@ export function Onboarding({ onCompleted }) {
 
   return (
     <div style={containerStyle}>
+      {/* Pre-Onboarding Step 1: Voice Value Proposition */}
+      {step === -1 && (
+        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }} className="a-rise">
+          <div style={{
+            width: "56px", height: "56px", borderRadius: "50%",
+            background: TOKENS.colors.primaryLight,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            marginBottom: "16px"
+          }}>
+            <Mic size={28} style={{ color: TOKENS.colors.primary }} />
+          </div>
+          <h1 style={{ ...titleStyle, fontSize: "24px", marginBottom: "8px" }}>Aarogya</h1>
+          <p style={{ ...subtitleStyle, fontSize: "14px", marginBottom: "28px" }}>
+            Your AI-powered health, nutrition, and wellness companion.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%", marginBottom: "28px", textAlign: "left" }}>
+            <div style={{
+              padding: "16px", border: `1px solid ${TOKENS.colors.border}`,
+              borderRadius: "14px", background: TOKENS.colors.surface
+            }}>
+              <strong style={{ fontSize: "14.5px", display: "flex", alignItems: "center", gap: "6px", color: TOKENS.colors.textDark, marginBottom: "4px" }}>
+                <Mic size={15} style={{ color: TOKENS.colors.primary }} /> Speak naturally to log
+              </strong>
+              <p style={{ fontSize: "12.5px", color: TOKENS.colors.textMuted, margin: 0, lineHeight: 1.45 }}>
+                No more tedious search menus. Log meals, water, workouts, sleep, and medicines in simple natural sentences.
+              </p>
+            </div>
+
+            <div style={{
+              padding: "16px", border: `1px solid ${TOKENS.colors.border}`,
+              borderRadius: "14px", background: TOKENS.colors.surface
+            }}>
+              <strong style={{ fontSize: "14.5px", display: "flex", alignItems: "center", gap: "6px", color: TOKENS.colors.textDark, marginBottom: "4px" }}>
+                <Activity size={15} style={{ color: TOKENS.colors.primary }} /> Science-backed targets
+              </strong>
+              <p style={{ fontSize: "12.5px", color: TOKENS.colors.textMuted, margin: 0, lineHeight: 1.45 }}>
+                Formulate personalized baseline targets for calories, protein, and fiber calculated with clinical precision.
+              </p>
+            </div>
+          </div>
+
+          <button style={buttonStyle} onClick={() => setStep(0)}>
+            Next <ArrowRight size={18} />
+          </button>
+        </div>
+      )}
+
+      {/* Pre-Onboarding Step 2: Biomarker Value Proposition */}
+      {step === 0 && (
+        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }} className="a-rise">
+          <div style={{
+            width: "56px", height: "56px", borderRadius: "50%",
+            background: TOKENS.colors.primaryLight,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            marginBottom: "16px"
+          }}>
+            <ShieldAlert size={28} style={{ color: TOKENS.colors.primary }} />
+          </div>
+          <h1 style={{ ...titleStyle, fontSize: "24px", marginBottom: "8px" }}>Connect the dots</h1>
+          <p style={{ ...subtitleStyle, fontSize: "14px", marginBottom: "28px" }}>
+            Go beyond calories to identify real biomarker gaps.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%", marginBottom: "28px", textAlign: "left" }}>
+            <div style={{
+              padding: "16px", border: `1px solid ${TOKENS.colors.border}`,
+              borderRadius: "14px", background: TOKENS.colors.surface
+            }}>
+              <strong style={{ fontSize: "14.5px", display: "flex", alignItems: "center", gap: "6px", color: TOKENS.colors.textDark, marginBottom: "4px" }}>
+                <Heart size={15} style={{ color: TOKENS.colors.primary }} /> Optional biomarker matching
+              </strong>
+              <p style={{ fontSize: "12.5px", color: TOKENS.colors.textMuted, margin: 0, lineHeight: 1.45 }}>
+                Upload standard blood panels to instantly flag deficiencies (e.g. Iron, Vitamin D) and map corrective food sources.
+              </p>
+            </div>
+
+            <div style={{
+              padding: "16px", border: `1px solid ${TOKENS.colors.border}`,
+              borderRadius: "14px", background: TOKENS.colors.surface
+            }}>
+              <strong style={{ fontSize: "14.5px", display: "flex", alignItems: "center", gap: "6px", color: TOKENS.colors.textDark, marginBottom: "4px" }}>
+                <Lock size={15} style={{ color: TOKENS.colors.primary }} /> Privacy by Design
+              </strong>
+              <p style={{ fontSize: "12.5px", color: TOKENS.colors.textMuted, margin: 0, lineHeight: 1.45 }}>
+                Your clinical data is processed securely with strict DPDP compliance and consent limits.
+              </p>
+            </div>
+          </div>
+
+          <button style={buttonStyle} onClick={() => setStep(1)}>
+            Get Started <ArrowRight size={18} />
+          </button>
+        </div>
+      )}
+
       {/* Step 1: Body demographics */}
       {step === 1 && (
         <div>
@@ -709,23 +805,22 @@ export function Onboarding({ onCompleted }) {
             {t("onboarding.startCta")}
           </button>
 
-          {/* Optional, secondary: lab report upload */}
+          {/* Optional, secondary: lab report upload as text link */}
           <label style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: "8px",
-            padding: "12px",
+            gap: "6px",
+            padding: "8px 12px",
             background: "transparent",
-            color: TOKENS.colors.textMuted,
-            border: `1px solid ${TOKENS.colors.border}`,
-            borderRadius: TOKENS.borderRadius.input,
+            color: TOKENS.colors.primary,
             cursor: isReportUploading ? "not-allowed" : "pointer",
-            fontSize: "13px",
-            fontWeight: 500,
+            fontSize: "13.5px",
+            fontWeight: 600,
             width: "100%",
             boxSizing: "border-box",
-            marginTop: "12px"
+            marginTop: "16px",
+            textDecoration: "underline"
           }}>
             <Upload size={14} />
             {isReportUploading ? "Reading..." : t("onboarding.reportOptional")}
@@ -746,20 +841,22 @@ export function Onboarding({ onCompleted }) {
         </div>
       )}
 
-      {/* Step progress indicator — bottom of every step (P3-7) */}
-      <div style={{ marginTop: "28px", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
-        <div style={{ display: "flex", gap: "5px" }}>
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <span key={i} style={{
-              height: "6px", borderRadius: i <= step ? "3px" : "50%",
-              background: i <= step ? TOKENS.colors.primary : TOKENS.colors.border,
-              width: i <= step ? "16px" : "6px",
-              transition: "all 0.3s ease"
-            }} />
-          ))}
+      {/* Step progress indicator — bottom of demographics steps (P3-7) */}
+      {step >= 1 && (
+        <div style={{ marginTop: "28px", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+          <div style={{ display: "flex", gap: "5px" }}>
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <span key={i} style={{
+                height: "6px", borderRadius: i <= step ? "3px" : "50%",
+                background: i <= step ? TOKENS.colors.primary : TOKENS.colors.border,
+                width: i <= step ? "16px" : "6px",
+                transition: "all 0.3s ease"
+              }} />
+            ))}
+          </div>
+          <div style={{ fontSize: "11px", color: TOKENS.colors.textMuted }}>Step {step} of 6</div>
         </div>
-        <div style={{ fontSize: "11px", color: TOKENS.colors.textMuted }}>Step {step} of 6</div>
-      </div>
+      )}
     </div>
   );
 }
