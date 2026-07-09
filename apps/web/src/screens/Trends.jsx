@@ -18,7 +18,7 @@ const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export function Trends() {
   const state = useAppState();
   const [period, setPeriod] = useState("week"); // week | month
-  
+
   // Month View State
   const [currentDate, setCurrentDate] = useState(new Date());
   const [monthLogs, setMonthLogs] = useState([]);
@@ -35,7 +35,7 @@ export function Trends() {
       const month = currentDate.getMonth();
       const firstDay = new Date(year, month, 1).toISOString().split("T")[0];
       const lastDay = new Date(year, month + 1, 0).toISOString().split("T")[0];
-      
+
       const res = await apiFetch(`/logs?start=${firstDay}&end=${lastDay}`);
       setMonthLogs(res.logs || []);
     } catch (err) {
@@ -86,7 +86,7 @@ export function Trends() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  
+
   // Calculate day index for start of month (Monday-based grid)
   let firstDayIndex = new Date(year, month, 1).getDay(); // Sun=0, Mon=1, etc.
   firstDayIndex = firstDayIndex === 0 ? 6 : firstDayIndex - 1; // Mon=0, Tue=1 ... Sun=6
@@ -242,10 +242,10 @@ export function Trends() {
               <div style={{ padding: "12px 0", textAlign: "center" }}>
                 <ShieldAlert size={28} style={{ color: TOKENS.colors.textMuted, opacity: 0.7, marginBottom: "8px" }} />
                 <div style={{ fontSize: "13.5px", fontWeight: 600, color: TOKENS.colors.ink, marginBottom: "4px" }}>
-                  No blood marker trend linked
+                  No Health marker trend linked
                 </div>
                 <div style={{ fontSize: "12px", color: TOKENS.colors.textMuted }}>
-                  Marker support trends require a blood report. Go to the Health tab to upload.
+                  Marker support trends require a report. Go to the Health tab to upload.
                 </div>
               </div>
             )}
@@ -277,7 +277,7 @@ export function Trends() {
                 return (
                   <div style={{ textAlign: "center", padding: "18px 0 8px" }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={TOKENS.colors.textMuted} strokeWidth="1.6" style={{ marginBottom: "8px" }}>
-                      <path d="M3 17l6-6 4 4 8-8"/>
+                      <path d="M3 17l6-6 4 4 8-8" />
                     </svg>
                     <p style={{ fontSize: "12px", color: TOKENS.colors.textMuted, margin: "0 0 8px" }}>
                       Log a few meals this week to see your energy pattern.
@@ -337,7 +337,7 @@ export function Trends() {
                   margin: 0,
                   lineHeight: 1.5
                 }}>
-                  {loggedDays.length > 2 
+                  {loggedDays.length > 2
                     ? t("trends.noticedWeek")
                     : "Log meals and activities to see weekly pattern insights."
                   }
@@ -371,8 +371,8 @@ export function Trends() {
                       background: dot.status === "logged"
                         ? `rgba(23,89,74,0.85)`
                         : dot.status === "missed"
-                        ? TOKENS.colors.border
-                        : "#F3F1EC",
+                          ? TOKENS.colors.border
+                          : "#F3F1EC",
                       border: dot.status === "future" ? `1px solid ${TOKENS.colors.border}` : "none",
                       margin: "0 auto"
                     }}
@@ -507,7 +507,7 @@ export function Trends() {
                     }}>
                       {cell.dayNum}
                     </span>
-                    
+
                     {/* Log status indicator dot */}
                     <div style={{
                       width: "5px", height: "5px", borderRadius: "50%",
@@ -538,7 +538,7 @@ export function Trends() {
         }}>
           {/* Click blocker background */}
           <div style={{ position: "absolute", inset: 0 }} onClick={() => setSelectedDateLogs(null)} />
-          
+
           {/* Modal content card */}
           <div style={{
             position: "relative", width: "100%", maxWidth: "400px",
