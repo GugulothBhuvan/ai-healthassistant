@@ -23,6 +23,16 @@ const WIDELY_USED_MEDICINES = [
   { name: "Obeda", ingredient: "Generic Semaglutide" }
 ];
 
+// Predefined suggestion list for supplements (Screen 3)
+const WIDELY_USED_SUPPLEMENTS = [
+  { name: "Vitamin D3", ingredient: "Cholecalciferol" },
+  { name: "Vitamin B12", ingredient: "Cobalamin" },
+  { name: "Iron", ingredient: "Ferrous Ascorbate" },
+  { name: "Magnesium", ingredient: "Magnesium Glycinate" },
+  { name: "Omega-3", ingredient: "Fish Oil" },
+  { name: "Zinc", ingredient: "Zinc Picolinate" }
+];
+
 // Predefined symptoms for Screen 2
 const PREDEFINED_SYMPTOMS = [
   "Nausea", "Constipation",
@@ -760,20 +770,24 @@ export function Health({ onOpenAssistant }) {
     );
   }
 
-  // ── VIEW: ADD MEDICATION (Screen 3) ──
+  // ── VIEW: ADD MEDICATION & SUPPLEMENTS (Screen 3) ──
   if (view === "add_medicine") {
     // Filter suggestions based on search
     const filteredMedicines = WIDELY_USED_MEDICINES.filter(
       med => med.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
              med.ingredient.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    const filteredSupplements = WIDELY_USED_SUPPLEMENTS.filter(
+      sup => sup.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+             sup.ingredient.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
       <div style={{ fontFamily: TOKENS.fonts.data, color: TOKENS.colors.ink, paddingBottom: "88px" }} className="a-rise">
-        {renderHeader("Add Medication", true)}
+        {renderHeader("Add Medication / Supplement", true)}
 
         <p style={{ fontSize: "14px", color: TOKENS.colors.textMuted, margin: "0 0 10px 0" }}>
-          Search or add your medication
+          Search or add your medication or supplement
         </p>
 
         {/* Search input field */}
@@ -782,7 +796,7 @@ export function Health({ onOpenAssistant }) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search medications..."
+            placeholder="Search medications or supplements..."
             style={{
               width: "100%", padding: "14px 16px 14px 40px",
               border: `1px solid ${TOKENS.colors.border}`, borderRadius: "12px",
@@ -792,49 +806,96 @@ export function Health({ onOpenAssistant }) {
           <Search size={18} style={{ position: "absolute", left: "14px", top: "15px", color: TOKENS.colors.textFaint }} />
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "14px" }}>
-          <span style={{ fontSize: "11px", fontWeight: 600, color: TOKENS.colors.textFaint, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            WIDELY USED
-          </span>
-          <span style={{ fontSize: "11px", color: TOKENS.colors.textMuted, fontWeight: 500 }}>
-            Top Suggestions
-          </span>
-        </div>
-
-        {/* Suggestion list */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "24px" }}>
-          {filteredMedicines.map((med) => (
-            <div
-              key={med.name}
-              style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "14px 16px", border: `1px solid ${TOKENS.colors.border}`,
-                borderRadius: "12px", background: "#ffffff"
-              }}
-            >
-              <div>
-                <strong style={{ fontSize: "15px", display: "block", color: TOKENS.colors.ink }}>{med.name}</strong>
-                <span style={{ fontSize: "12px", color: TOKENS.colors.textMuted }}>{med.ingredient}</span>
-              </div>
-              <button
-                onClick={() => handleAddMedicineToCabinet(med.name, med.ingredient)}
-                style={{
-                  width: "28px", height: "28px", borderRadius: "50%",
-                  border: `1px solid ${TOKENS.colors.border}`, background: "#ffffff",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", color: TOKENS.colors.ink
-                }}
-              >
-                <Plus size={16} />
-              </button>
+        {/* Medicines Section */}
+        {filteredMedicines.length > 0 && (
+          <div style={{ marginBottom: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "12px" }}>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: TOKENS.colors.textFaint, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                MEDICATIONS
+              </span>
+              <span style={{ fontSize: "11px", color: TOKENS.colors.textMuted, fontWeight: 500 }}>
+                Widely Used
+              </span>
             </div>
-          ))}
-        </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {filteredMedicines.map((med) => (
+                <div
+                  key={med.name}
+                  style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    padding: "14px 16px", border: `1px solid ${TOKENS.colors.border}`,
+                    borderRadius: "12px", background: "#ffffff"
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: "15px", display: "block", color: TOKENS.colors.ink }}>{med.name}</strong>
+                    <span style={{ fontSize: "12px", color: TOKENS.colors.textMuted }}>{med.ingredient}</span>
+                  </div>
+                  <button
+                    onClick={() => handleAddMedicineToCabinet(med.name, med.ingredient)}
+                    style={{
+                      width: "28px", height: "28px", borderRadius: "50%",
+                      border: `1px solid ${TOKENS.colors.border}`, background: "#ffffff",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer", color: TOKENS.colors.ink
+                    }}
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Supplements Section */}
+        {filteredSupplements.length > 0 && (
+          <div style={{ marginBottom: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "12px" }}>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: TOKENS.colors.textFaint, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                SUPPLEMENTS
+              </span>
+              <span style={{ fontSize: "11px", color: TOKENS.colors.textMuted, fontWeight: 500 }}>
+                Widely Used
+              </span>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {filteredSupplements.map((sup) => (
+                <div
+                  key={sup.name}
+                  style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    padding: "14px 16px", border: `1px solid ${TOKENS.colors.border}`,
+                    borderRadius: "12px", background: "#ffffff"
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: "15px", display: "block", color: TOKENS.colors.ink }}>{sup.name}</strong>
+                    <span style={{ fontSize: "12px", color: TOKENS.colors.textMuted }}>{sup.ingredient}</span>
+                  </div>
+                  <button
+                    onClick={() => handleAddMedicineToCabinet(sup.name, sup.ingredient)}
+                    style={{
+                      width: "28px", height: "28px", borderRadius: "50%",
+                      border: `1px solid ${TOKENS.colors.border}`, background: "#ffffff",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer", color: TOKENS.colors.ink
+                    }}
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Custom addition button */}
         {searchQuery.trim() && (
           <button
-            onClick={() => handleAddMedicineToCabinet(searchQuery.trim(), "Custom Medication")}
+            onClick={() => handleAddMedicineToCabinet(searchQuery.trim(), "Custom Item")}
             style={{
               width: "100%", padding: "14px",
               background: "#B3C8BE", // matching Screen 3 bottom button style
@@ -844,7 +905,7 @@ export function Health({ onOpenAssistant }) {
               textAlign: "center"
             }}
           >
-            Add Medicine
+            Add Custom Item
           </button>
         )}
       </div>
