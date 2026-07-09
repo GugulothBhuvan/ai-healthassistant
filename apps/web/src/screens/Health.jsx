@@ -43,10 +43,7 @@ export function Health({ onOpenAssistant }) {
   // Local storage persisted state for medication tracker flow
   const [cabinet, setCabinet] = useState(() => {
     const saved = localStorage.getItem("aarogya_cabinet");
-    return saved ? JSON.parse(saved) : [
-      { id: "1", name: "Ozempic", ingredient: "Semaglutide", schedule_text: "Once weekly" },
-      { id: "2", name: "Mounjaro", ingredient: "Tirzepatide", schedule_text: "Once weekly" }
-    ];
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [symptomsLog, setSymptomsLog] = useState(() => {
