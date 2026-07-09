@@ -244,16 +244,14 @@ export function App() {
                   >
                     <Heart size={18} /> Health
                   </button>
+                  <button
+                    onClick={() => setActiveTab("profile")}
+                    style={sidebarBtnStyle(activeTab === "profile")}
+                  >
+                    <User size={18} /> You
+                  </button>
                 </div>
               </div>
-
-              {/* Profile pinned at the bottom of the sidebar */}
-              <button
-                onClick={() => setActiveTab("profile")}
-                style={sidebarBtnStyle(activeTab === "profile")}
-              >
-                <User size={18} /> You
-              </button>
             </div>
 
             {/* WIDE VIEW: Floating voice CTA — visible on every screen */}
