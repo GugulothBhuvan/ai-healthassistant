@@ -7,13 +7,17 @@ export const COPY_STRINGS = {
   "toast.markerLink": "{food} moved your {marker} progress.",
   "toast.waterLogged": "Logged {count} glasses of water.",
   "toast.weightLogged": "Logged weight of {weight} kg.",
+  "toast.stepsLogged": "Logged {count} steps.",
+  "toast.sleepLogged": "Logged {hours} hours of sleep.",
+  "toast.workoutLogged": "Logged workout: {label}.",
+  "toast.medicineLogged": "Logged medicine: {name}.",
   "toast.noted": "Noted.",
   "toast.addedMedicine": "Added. I'll keep track with you.",
   "toast.summaryReady": "Summary ready to download.",
   "toast.oneGlass": "One glass down.",
 
   // Assistant states
-  "assistant.decline": "I only log things — food, water, weight.",
+  "assistant.decline": "I only log meals, workouts, weight, water, steps, sleep, and medicines.",
   "assistant.unknownDish": "Unrecognized dish: {dish}. Tap to correct.",
   "assistant.parseError": "Parsing failed. Try speaking or typing again.",
   "assistant.medicineSaw": "Saw: {name}. Add to your medicines?",

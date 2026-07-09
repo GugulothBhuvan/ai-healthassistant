@@ -1,16 +1,25 @@
-// ComposerSheet component — v3: adds CAMERA state (§6.1) + medicine intent display
-// Conversational assistant drawer, input composition, parse overrides, photo input
-
 import React, { useState, useRef, useEffect } from "react";
 import { TOKENS } from "../tokens.js";
 import { useAssistant } from "./useAssistant.js";
 import { Voice } from "../components/Voice.jsx";
-import { X, Send, Check, AlertTriangle, MessageCircleOff, Loader, Camera, Mic, Image as ImageIcon, Sparkles } from "lucide-react";
+import { X, Send, Check, AlertTriangle, MessageCircleOff, Loader, Camera, Mic, Image as ImageIcon, Sparkles, UtensilsCrossed, Dumbbell, Scale, Droplet, Footprints, Moon, Pill } from "lucide-react";
 import { t } from "../lib/copy.js";
 import { useToast } from "../ui/Feedback.jsx";
 import { useAppState } from "../lib/useAppState.jsx";
 
+const CATEGORIES = [
+  { id: "food", name: "Food", icon: UtensilsCrossed, placeholder: "Type: '2 roti paneer sabji' or...", suggestions: ["do roti aur paneer ki sabji", "had oats and apple for breakfast", "black coffee with sugar"] },
+  { id: "workout", name: "Workout", icon: Dumbbell, placeholder: "Type: '45 mins strength training' or...", suggestions: ["45 mins strength training", "ran 5k in 25 mins", "did yoga for 20 mins"] },
+  { id: "weight", name: "Weight", icon: Scale, placeholder: "Type: 'weighed 71.5 kg' or...", suggestions: ["weighed 71.5 kg today", "weight 68 kg"] },
+  { id: "water", name: "Water", icon: Droplet, placeholder: "Type: 'drank 2 glasses of water' or...", suggestions: ["drank 2 glasses of water", "logged 3 cups of water"] },
+  { id: "steps", name: "Steps", icon: Footprints, placeholder: "Type: 'walked 8000 steps today' or...", suggestions: ["walked 8000 steps today", "completed 10k steps"] },
+  { id: "sleep", name: "Sleep", icon: Moon, placeholder: "Type: 'slept for 7.5 hours' or...", suggestions: ["slept for 7.5 hours last night", "logged 8h sleep"] },
+  { id: "medicine", name: "Medicine", icon: Pill, placeholder: "Type: 'took my vitamin D' or...", suggestions: ["took my vitamin D", "took my medicine"] }
+];
+
 export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "text", initialPlaceholder = "" }) {
+  const [selectedCategory, setSelectedCategory] = useState("food");
+  const [placeholderOverride, setPlaceholderOverride] = useState("");
   const {
     loading,
     transcript,
@@ -105,13 +114,6 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
   const handleSuggestionClick = (suggestion) => {
     setInputText(suggestion);
   };
-
-  const suggestions = [
-    "do roti aur paneer ki sabji",
-    "drank 2 glasses of water",
-    "took my D3",
-    "30 min walk"
-  ];
 
   const backdropStyle = {
     position: "fixed",
@@ -254,29 +256,75 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
 
           {/* Text mode — suggestions */}
           {!loading && !errorMsg && !parsedResponse && mode === "text" && (
-            <div>
-              <p style={{ fontSize: "11px", fontWeight: 600, color: TOKENS.colors.textFaint, textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 8px" }}>
-                Try saying
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {suggestions.map((suggestion, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    style={{
-                      padding: "8px 12px",
-                      background: TOKENS.colors.bg,
-                      border: `1px solid ${TOKENS.colors.border}`,
-                      borderRadius: "20px",
-                      fontSize: "12px",
-                      color: TOKENS.colors.ink,
-                      cursor: "pointer",
-                      textAlign: "left"
-                    }}
-                  >
-                    "{suggestion}"
-                  </button>
-                ))}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div>
+                <p style={{ fontSize: "11px", fontWeight: 600, color: TOKENS.colors.textFaint, textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 8px" }}>
+                  Choose Category to Log
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                  {CATEGORIES.map(cat => {
+                    const Icon = cat.icon;
+                    const isSelected = selectedCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(cat.id);
+                          setPlaceholderOverride(cat.placeholder);
+                        }}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                          padding: "10px 6px",
+                          borderRadius: "12px",
+                          border: `1.5px solid ${isSelected ? TOKENS.colors.primary : TOKENS.colors.border}`,
+                          background: isSelected ? TOKENS.colors.primaryLight : "#ffffff",
+                          color: isSelected ? TOKENS.colors.primary : TOKENS.colors.ink,
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                          boxSizing: "border-box"
+                        }}
+                      >
+                        <Icon size={16} style={{ color: isSelected ? TOKENS.colors.primary : TOKENS.colors.textMuted }} />
+                        <span>{cat.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <p style={{ fontSize: "11px", fontWeight: 600, color: TOKENS.colors.textFaint, textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 8px" }}>
+                  Try saying
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {(CATEGORIES.find(c => c.id === selectedCategory)?.suggestions || []).map((suggestion, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      style={{
+                        padding: "8px 12px",
+                        background: TOKENS.colors.bg,
+                        border: `1px solid ${TOKENS.colors.border}`,
+                        borderRadius: "20px",
+                        fontSize: "12px",
+                        color: TOKENS.colors.ink,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        transition: "all 0.15s ease"
+                      }}
+                    >
+                      "{suggestion}"
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -408,6 +456,22 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
                     </div>
                   ) : null}
 
+                  {/* Steps confirmation */}
+                  {parsedResponse.steps && parsedResponse.steps > 0 ? (
+                    <div style={{ background: TOKENS.colors.greenSoft, padding: "12px", borderRadius: "8px", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ color: TOKENS.colors.green, fontWeight: "bold" }}>🚶‍♂️</span>
+                      <span>Steps: <strong>{parsedResponse.steps.toLocaleString()} steps</strong></span>
+                    </div>
+                  ) : null}
+
+                  {/* Sleep confirmation */}
+                  {parsedResponse.sleep && parsedResponse.sleep.hours && parsedResponse.sleep.hours > 0 ? (
+                    <div style={{ background: TOKENS.colors.bg, border: `1px solid ${TOKENS.colors.border}`, padding: "12px", borderRadius: "8px", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ color: TOKENS.colors.primary, fontWeight: "bold" }}>🌙</span>
+                      <span>Sleep: <strong>{parsedResponse.sleep.hours} hours</strong></span>
+                    </div>
+                  ) : null}
+
                   {/* Unknown dishes warning tray */}
                   {parsedResponse.unknown && parsedResponse.unknown.length > 0 && (
                     <div style={{
@@ -473,7 +537,7 @@ export function ComposerSheet({ isOpen, onClose, onLogCommitted, initialMode = "
             ref={textInputRef}
             type="text"
             style={textInputStyle}
-            placeholder={initialPlaceholder || "Type: '2 roti paneer sabji' or 'took my D3'"}
+            placeholder={placeholderOverride || initialPlaceholder || "Type: '2 roti paneer sabji' or..."}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={loading || mode === "camera"}

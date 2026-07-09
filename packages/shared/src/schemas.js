@@ -28,6 +28,20 @@ export const ParsedExchangeSchema = z.object({
   unknown: z.array(z.string()).default([]),
   iron_relevant: z.boolean().optional().default(false),
   decline: z.string().nullable().optional().default(null),
+  activity: z.object({
+    label: z.string(),
+    kcal_est: z.number().nullable().optional().default(null),
+    minutes: z.number().nullable().optional().default(null),
+  }).nullable().optional().default(null),
+  medicine: z.object({
+    name: z.string(),
+    dose_text: z.string().nullable().optional().default(null),
+    source: z.enum(["prescription", "user"]).nullable().optional().default(null),
+  }).nullable().optional().default(null),
+  steps: z.number().int().min(0).nullable().optional().default(null),
+  sleep: z.object({
+    hours: z.number().nullable().optional().default(null),
+  }).nullable().optional().default(null),
 });
 
 export const ExchangeResponseSchema = z.object({

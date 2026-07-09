@@ -22,7 +22,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "aarogya-assistant-secret-key-12345
 
 // Zod schema for intent response from LLM
 const IntentResponseSchema = z.object({
-  intent: z.enum(["food", "water", "weight", "report", "other"]),
+  intent: z.enum(["food", "water", "weight", "workout", "steps", "sleep", "medicine", "report", "other"]),
   confidence: z.number().min(0).max(1),
   explanation: z.string()
 });
@@ -71,7 +71,7 @@ router.post("/exchange", async (req, res, next) => {
 
     // 3. Parse content based on intent
     let parsedResult;
-    if (["food", "water", "weight"].includes(classification.intent)) {
+    if (["food", "water", "weight", "workout", "steps", "sleep", "medicine"].includes(classification.intent)) {
       try {
         parsedResult = await llm(
           "parse",
@@ -314,6 +314,72 @@ router.post("/confirm", async (req, res, next) => {
       if (logRow && logRow[0]) logsCreated.push(logRow[0].id);
     }
 
+    // Save activity/workout logs
+    if (parsed.activity) {
+      const { data: logRow, error } = await supabase
+        .from("logs")
+        .insert({
+          user_id: userId,
+          type: "activity",
+          raw_text: parsed.heard,
+          channel: decoded.channel || "text",
+          parse: parsed.activity
+        })
+        .select("id");
+      if (error) throw error;
+      if (logRow && logRow[0]) logsCreated.push(logRow[0].id);
+    }
+
+    // Save steps logs
+    if (parsed.steps && parsed.steps > 0) {
+      const { data: logRow, error } = await supabase
+        .from("logs")
+        .insert({
+          user_id: userId,
+          type: "steps",
+          raw_text: parsed.heard,
+          channel: decoded.channel || "text",
+          parse: {
+            steps: parsed.steps
+          }
+        })
+        .select("id");
+      if (error) throw error;
+      if (logRow && logRow[0]) logsCreated.push(logRow[0].id);
+    }
+
+    // Save sleep logs
+    if (parsed.sleep && parsed.sleep.hours && parsed.sleep.hours > 0) {
+      const { data: logRow, error } = await supabase
+        .from("logs")
+        .insert({
+          user_id: userId,
+          type: "sleep",
+          raw_text: parsed.heard,
+          channel: decoded.channel || "text",
+          parse: parsed.sleep
+        })
+        .select("id");
+      if (error) throw error;
+      if (logRow && logRow[0]) logsCreated.push(logRow[0].id);
+    }
+
+    // Save medicine logs
+    if (parsed.medicine) {
+      const { data: logRow, error } = await supabase
+        .from("logs")
+        .insert({
+          user_id: userId,
+          type: "medicine",
+          raw_text: parsed.heard,
+          channel: decoded.channel || "text",
+          parse: parsed.medicine
+        })
+        .select("id");
+      if (error) throw error;
+      if (logRow && logRow[0]) logsCreated.push(logRow[0].id);
+    }
+
     // Update profiles weight if logged weight
     if (parsed.weight_kg && parsed.weight_kg > 0) {
       await supabase
@@ -332,6 +398,18 @@ router.post("/confirm", async (req, res, next) => {
     } else if (parsed.weight_kg && parsed.weight_kg > 0) {
       toast_key = "toast.weightLogged";
       toast_slots = { weight: String(parsed.weight_kg) };
+    } else if (parsed.steps && parsed.steps > 0) {
+      toast_key = "toast.stepsLogged";
+      toast_slots = { count: String(parsed.steps) };
+    } else if (parsed.sleep && parsed.sleep.hours && parsed.sleep.hours > 0) {
+      toast_key = "toast.sleepLogged";
+      toast_slots = { hours: String(parsed.sleep.hours) };
+    } else if (parsed.activity) {
+      toast_key = "toast.workoutLogged";
+      toast_slots = { label: parsed.activity.label };
+    } else if (parsed.medicine) {
+      toast_key = "toast.medicineLogged";
+      toast_slots = { name: parsed.medicine.name };
     } else if (loggedFoodItems.length > 0) {
       // Find if we moved a gap
       const positiveDelta = marker_deltas.find(d => d.contributed);
