@@ -2,7 +2,7 @@
 // Collects demographics, goals, dream weight, tracking checkbox items, dietary habits,
 // and recommends targets that the user can directly edit/customize before submitting.
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TOKENS } from "../tokens.js";
 import { apiFetch } from "../lib/api.js";
 import { t } from "../lib/copy.js";
@@ -21,15 +21,15 @@ export function Onboarding({ onCompleted }) {
   const [sex, setSex] = useState(""); // empty by default
 
   // Step 2: Goal & Dream Weight
-  const [goal, setGoal] = useState("weight_loss"); // weight_loss | muscle_gain | deficiencies | longevity
+  const [goal, setGoal] = useState(""); // empty by default; weight_loss | muscle_gain | deficiencies | longevity
   const [dreamWeight, setDreamWeight] = useState("");
 
   // Step 3: Checkboxes — start empty so the user actively chooses
   const [actions, setActions] = useState([]);
 
   // Step 4: Plate & Habits
-  const [diet, setDiet] = useState("vegetarian");
-  const [activity, setActivity] = useState("somewhere_between");
+  const [diet, setDiet] = useState(""); // empty by default
+  const [activity, setActivity] = useState(""); // empty by default
 
   // Step 5: Customize Targets
   const [customCalories, setCustomCalories] = useState(1800);
@@ -41,6 +41,110 @@ export function Onboarding({ onCompleted }) {
   const [loading, setLoading] = useState(false);
   const [isReportUploading, setIsReportUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
+
+  // Load onboarding progress from localStorage on mount
+  useEffect(() => {
+    const savedStep = localStorage.getItem("aarogya_onboarding_step");
+    if (savedStep) {
+      const stepNum = Number(savedStep);
+      if (stepNum < 6) {
+        setStep(stepNum);
+      }
+    }
+    
+    const savedName = localStorage.getItem("aarogya_onboarding_name");
+    if (savedName) setName(savedName);
+    
+    const savedHeight = localStorage.getItem("aarogya_onboarding_height");
+    if (savedHeight) setHeight(savedHeight);
+    
+    const savedWeight = localStorage.getItem("aarogya_onboarding_weight");
+    if (savedWeight) setWeight(savedWeight);
+    
+    const savedAge = localStorage.getItem("aarogya_onboarding_age");
+    if (savedAge) setAge(savedAge);
+    
+    const savedSex = localStorage.getItem("aarogya_onboarding_sex");
+    if (savedSex) setSex(savedSex);
+    
+    const savedGoal = localStorage.getItem("aarogya_onboarding_goal");
+    if (savedGoal) setGoal(savedGoal);
+    
+    const savedDreamWeight = localStorage.getItem("aarogya_onboarding_dream_weight");
+    if (savedDreamWeight) setDreamWeight(savedDreamWeight);
+    
+    const savedActions = localStorage.getItem("aarogya_onboarding_actions");
+    if (savedActions) {
+      try {
+        setActions(JSON.parse(savedActions));
+      } catch (e) {}
+    }
+    
+    const savedDiet = localStorage.getItem("aarogya_onboarding_diet");
+    if (savedDiet) setDiet(savedDiet);
+    
+    const savedActivity = localStorage.getItem("aarogya_onboarding_activity");
+    if (savedActivity) setActivity(savedActivity);
+  }, []);
+
+  // Persist onboarding fields to localStorage on change
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_step", String(step));
+  }, [step]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_name", name);
+  }, [name]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_height", height);
+  }, [height]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_weight", weight);
+  }, [weight]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_age", age);
+  }, [age]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_sex", sex);
+  }, [sex]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_goal", goal);
+  }, [goal]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_dream_weight", dreamWeight);
+  }, [dreamWeight]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_actions", JSON.stringify(actions));
+  }, [actions]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_diet", diet);
+  }, [diet]);
+
+  useEffect(() => {
+    localStorage.setItem("aarogya_onboarding_activity", activity);
+  }, [activity]);
+
+  const clearOnboardingLocalStorage = () => {
+    localStorage.removeItem("aarogya_onboarding_step");
+    localStorage.removeItem("aarogya_onboarding_name");
+    localStorage.removeItem("aarogya_onboarding_height");
+    localStorage.removeItem("aarogya_onboarding_weight");
+    localStorage.removeItem("aarogya_onboarding_age");
+    localStorage.removeItem("aarogya_onboarding_sex");
+    localStorage.removeItem("aarogya_onboarding_goal");
+    localStorage.removeItem("aarogya_onboarding_dream_weight");
+    localStorage.removeItem("aarogya_onboarding_actions");
+    localStorage.removeItem("aarogya_onboarding_diet");
+    localStorage.removeItem("aarogya_onboarding_activity");
+  };
 
   const calculateLocalTargets = () => {
     // Mifflin-St Jeor BMR
@@ -91,6 +195,10 @@ export function Onboarding({ onCompleted }) {
   };
 
   const handleNextStep2 = () => {
+    if (!goal) {
+      alert("Please select your primary health goal.");
+      return;
+    }
     if (!dreamWeight || Number(dreamWeight) <= 35 || Number(dreamWeight) > 180) {
       alert("Please enter a valid dream weight between 35 and 180 kg.");
       return;
@@ -115,6 +223,14 @@ export function Onboarding({ onCompleted }) {
   };
 
   const handleNextStep4 = () => {
+    if (!diet) {
+      alert("Please select your dietary pattern.");
+      return;
+    }
+    if (!activity) {
+      alert("Please select your activity level.");
+      return;
+    }
     const computed = calculateLocalTargets();
     setCustomCalories(computed.calories);
     setCustomProtein(computed.protein_g);
@@ -150,19 +266,28 @@ export function Onboarding({ onCompleted }) {
       setComputedTargets(data.targets);
       setStep(6);
     } catch (err) {
-      console.error("Onboarding API error, saving locally:", err);
-      // Fallback in case of local offline / dev mode
-      const local = {
-        name: name.trim(),
-        calories: Number(customCalories),
-        protein_g: Number(customProtein),
-        fibre_g: Number(customFibre),
-        dream_weight_kg: Number(dreamWeight),
-        goal,
-        actions
-      };
-      setComputedTargets(local);
-      setStep(6);
+      console.error("Onboarding API error:", err);
+      const isMock = 
+        !import.meta.env.VITE_SUPABASE_URL || 
+        import.meta.env.VITE_SUPABASE_URL.includes("mock") ||
+        import.meta.env.VITE_SUPABASE_URL.includes("placeholder");
+
+      if (isMock) {
+        // Fallback in case of local offline / dev mode
+        const local = {
+          name: name.trim(),
+          calories: Number(customCalories),
+          protein_g: Number(customProtein),
+          fibre_g: Number(customFibre),
+          dream_weight_kg: Number(dreamWeight),
+          goal,
+          actions
+        };
+        setComputedTargets(local);
+        setStep(6);
+      } else {
+        alert(`Could not save profile to database: ${err.message}. Please try again.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -187,12 +312,14 @@ export function Onboarding({ onCompleted }) {
 
       setUploadStatus("Reading markers... Success.");
       setTimeout(() => {
+        clearOnboardingLocalStorage();
         onCompleted(computedTargets, uploadRes.report_id);
       }, 1000);
     } catch (err) {
       console.error("Report upload failed during onboarding:", err);
       setUploadStatus("Extraction failed. You can upload again later.");
       setTimeout(() => {
+        clearOnboardingLocalStorage();
         onCompleted(computedTargets, null);
       }, 1500);
     } finally {
@@ -201,6 +328,7 @@ export function Onboarding({ onCompleted }) {
   };
 
   const handleSkipReport = () => {
+    clearOnboardingLocalStorage();
     onCompleted(computedTargets, null);
   };
 

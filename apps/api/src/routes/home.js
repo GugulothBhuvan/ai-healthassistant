@@ -49,6 +49,18 @@ router.post("/onboarding", async (req, res, next) => {
     next(err);
   }
 });
+// POST /reset
+router.post("/reset", async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    await supabase.from("logs").delete().eq("user_id", userId);
+    await supabase.from("reports").delete().eq("user_id", userId);
+    await supabase.from("profiles").delete().eq("id", userId);
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // GET /home
 router.get("/home", async (req, res, next) => {
@@ -179,7 +191,10 @@ router.get("/home", async (req, res, next) => {
       logs_today,
       flagged_markers,
       proactive_line,
-      name: targets?.name || "there"
+      name: targets?.name || "there",
+      sex: profile?.sex,
+      age: profile?.age,
+      height_cm: profile?.height_cm
     });
   } catch (err) {
     next(err);

@@ -23,7 +23,9 @@ import { Home as HomeIcon, TrendingUp, Heart, User, Mic, AlertCircle, Sparkles }
 
 export function App() {
   const [sessionLoading, setSessionLoading] = useState(true);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
+    return localStorage.getItem("aarogya_onboarding_done") === "true";
+  });
   const [activeTab, setActiveTab] = useState("home"); // home, trends, health, profile
   const [targets, setTargets] = useState(null);
 
@@ -46,12 +48,14 @@ export function App() {
       if (data.profile_completed) {
         setTargets(data.targets);
         setOnboardingCompleted(true);
+        localStorage.setItem("aarogya_onboarding_done", "true");
         // Show guided tour for returning users who haven't seen it
         if (!localStorage.getItem("aarogya_tour_seen")) {
           setTimeout(() => setShowTour(true), 800);
         }
       } else {
         setOnboardingCompleted(false);
+        localStorage.removeItem("aarogya_onboarding_done");
       }
     } catch (err) {
       console.error("Initialization failed:", err.message);
@@ -80,6 +84,7 @@ export function App() {
   const handleOnboardingFinished = (computedTargets, reportId) => {
     setTargets(computedTargets);
     setOnboardingCompleted(true);
+    localStorage.setItem("aarogya_onboarding_done", "true");
     setActiveTab("home");
     toast(t("toast.plainConfirm"), { tone: "success" });
     // Show guided tour if not seen before
@@ -99,6 +104,7 @@ export function App() {
 
   const handleReset = () => {
     setOnboardingCompleted(false);
+    setActiveTab("home");
     setTargets(null);
     setShowTour(false);
     // Clear tour flag so it replays after re-onboarding

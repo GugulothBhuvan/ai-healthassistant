@@ -6,7 +6,7 @@ import { apiFetch } from "../lib/api.js";
 import { supabase } from "../lib/supabase.js";
 import { useToast, useConfirm } from "../ui/Feedback.jsx";
 import { Button } from "../ui/primitives.jsx";
-import { User, Flame, Compass, RefreshCw } from "lucide-react";
+import { User, Flame, Compass, RefreshCw, LogOut } from "lucide-react";
 
 export function Profile({ onReset, onReplayTour }) {
   const [profile, setProfile] = useState(null);
@@ -30,6 +30,57 @@ export function Profile({ onReset, onReplayTour }) {
     fetchProfile();
   }, []);
 
+  const handleLogout = async () => {
+    const ok = await confirmDialog({
+      title: "Log out?",
+      body: "You will be logged out of your current session. You can start a fresh journey.",
+      confirmLabel: "Log Out",
+      cancelLabel: "Cancel",
+      tone: "danger"
+    });
+    if (!ok) return;
+
+    try {
+      const isMock = 
+        !import.meta.env.VITE_SUPABASE_URL || 
+        import.meta.env.VITE_SUPABASE_URL.includes("mock") ||
+        import.meta.env.VITE_SUPABASE_URL.includes("placeholder");
+
+      if (!isMock) {
+        await supabase.auth.signOut();
+      }
+
+      // Clear local storage progress & tokens
+      localStorage.removeItem("aarogya_tour_seen");
+      localStorage.removeItem("aarogya_onboarding_done");
+      localStorage.removeItem("aarogya_onboarding_step");
+      localStorage.removeItem("aarogya_onboarding_name");
+      localStorage.removeItem("aarogya_onboarding_height");
+      localStorage.removeItem("aarogya_onboarding_weight");
+      localStorage.removeItem("aarogya_onboarding_age");
+      localStorage.removeItem("aarogya_onboarding_sex");
+      localStorage.removeItem("aarogya_onboarding_goal");
+      localStorage.removeItem("aarogya_onboarding_dream_weight");
+      localStorage.removeItem("aarogya_onboarding_actions");
+      localStorage.removeItem("aarogya_onboarding_diet");
+      localStorage.removeItem("aarogya_onboarding_activity");
+
+      // Clear cabinet and logs
+      localStorage.removeItem("aarogya_cabinet");
+      localStorage.removeItem("aarogya_symptoms_log");
+      localStorage.removeItem("aarogya_taken_doses");
+
+      if (isMock) {
+        localStorage.removeItem("aarogya_mock_user_id");
+      }
+
+      onReset();
+    } catch (err) {
+      console.error("Logout failed:", err);
+      toast("Couldn't log out. Please try again.", { tone: "error" });
+    }
+  };
+
   const handleResetProfile = async () => {
     const ok = await confirmDialog({
       title: "Reset everything?",
@@ -41,20 +92,40 @@ export function Profile({ onReset, onReplayTour }) {
     if (!ok) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Clear database records via RLS — matches the confirmation copy above
-        // (profile, logs, and linked reports; report_markers cascade with reports).
-        await supabase.from("logs").delete().eq("user_id", user.id);
-        await supabase.from("reports").delete().eq("user_id", user.id);
-        await supabase.from("profiles").delete().eq("id", user.id);
+      // Call backend API reset endpoint to delete database records safely using JWT/mock authentication
+      await apiFetch("/reset", { method: "POST" });
 
-        // Trigger reset callback to go back to onboarding
-        // Clear local storage flags so guided tour and other settings reset
-        localStorage.removeItem("aarogya_tour_seen");
-        localStorage.removeItem("aarogya_onboarding_done");
-        onReset();
+      // Clear local storage progress & tokens
+      localStorage.removeItem("aarogya_tour_seen");
+      localStorage.removeItem("aarogya_onboarding_done");
+      localStorage.removeItem("aarogya_onboarding_step");
+      localStorage.removeItem("aarogya_onboarding_name");
+      localStorage.removeItem("aarogya_onboarding_height");
+      localStorage.removeItem("aarogya_onboarding_weight");
+      localStorage.removeItem("aarogya_onboarding_age");
+      localStorage.removeItem("aarogya_onboarding_sex");
+      localStorage.removeItem("aarogya_onboarding_goal");
+      localStorage.removeItem("aarogya_onboarding_dream_weight");
+      localStorage.removeItem("aarogya_onboarding_actions");
+      localStorage.removeItem("aarogya_onboarding_diet");
+      localStorage.removeItem("aarogya_onboarding_activity");
+
+      // Clear cabinet and logs
+      localStorage.removeItem("aarogya_cabinet");
+      localStorage.removeItem("aarogya_symptoms_log");
+      localStorage.removeItem("aarogya_taken_doses");
+
+      const isMock = 
+        !import.meta.env.VITE_SUPABASE_URL || 
+        import.meta.env.VITE_SUPABASE_URL.includes("mock") ||
+        import.meta.env.VITE_SUPABASE_URL.includes("placeholder");
+
+      // In mock mode, generate a FRESH mock user ID so they get a completely clean session on reset!
+      if (isMock) {
+        localStorage.removeItem("aarogya_mock_user_id");
       }
+
+      onReset();
     } catch (err) {
       console.error("Resetting profile failed:", err);
       toast("Couldn't reset your profile. Please try again.", { tone: "error" });
@@ -107,7 +178,7 @@ export function Profile({ onReset, onReplayTour }) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", fontSize: "14px" }}>
               <div>
                 <span style={{ color: "#6B685E", display: "block", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em" }}>Name</span>
-                <strong>{targets.name || "—"}</strong>
+                <strong>{targets.name || (profile.name && profile.name !== "there" ? profile.name : "—")}</strong>
               </div>
               <div>
                 <span style={{ color: "#6B685E", display: "block", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em" }}>Diet</span>
@@ -169,6 +240,9 @@ export function Profile({ onReset, onReplayTour }) {
             <Compass size={16} /> Replay Guided Tour
           </Button>
         )}
+        <Button variant="secondary" size="lg" full onClick={handleLogout}>
+          <LogOut size={16} /> Log Out
+        </Button>
         <Button variant="danger" size="lg" full onClick={handleResetProfile}>
           <RefreshCw size={16} /> Reset Profile & Settings
         </Button>

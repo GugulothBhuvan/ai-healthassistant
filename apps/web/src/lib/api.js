@@ -19,7 +19,22 @@ async function getJwtToken() {
     import.meta.env.VITE_SUPABASE_URL.includes("placeholder");
     
   if (isMock) {
-    return "mock-token-123";
+    let mockUserId = localStorage.getItem("aarogya_mock_user_id");
+    if (!mockUserId) {
+      mockUserId = "usr_" + Math.random().toString(36).substring(2, 15) + "_" + Date.now();
+      localStorage.setItem("aarogya_mock_user_id", mockUserId);
+    }
+    return `mock-token-${mockUserId}`;
+  }
+
+  // Not mock, but no session (e.g. after logout). Bootstrap a new anonymous session on the fly!
+  try {
+    const { data: signInData, error } = await supabase.auth.signInAnonymously();
+    if (!error && signInData?.session) {
+      return signInData.session.access_token;
+    }
+  } catch (err) {
+    console.error("Auto-bootstrap anonymous sign-in failed:", err);
   }
   return null;
 }
@@ -50,11 +65,16 @@ export async function apiFetch(endpoint, options = {}) {
   
   if (!res.ok) {
     let errorMsg = "";
+    const contentType = res.headers.get("content-type");
     try {
-      const errJson = await res.json();
-      errorMsg = errJson.error || errJson.message || res.statusText;
+      if (contentType && contentType.includes("application/json")) {
+        const errJson = await res.json();
+        errorMsg = errJson.error || errJson.message || res.statusText;
+      } else {
+        errorMsg = await res.text();
+      }
     } catch {
-      errorMsg = await res.text();
+      errorMsg = res.statusText;
     }
     throw new Error(errorMsg || `HTTP request failed: ${res.status}`);
   }
