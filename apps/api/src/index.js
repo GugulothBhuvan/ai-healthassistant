@@ -44,9 +44,12 @@ const authenticateUser = async (req, res, next) => {
       process.env.SUPABASE_URL.includes("placeholder");
 
     if (noRealSupabaseConfigured) {
-      // Return a stable demo user UUID
+      let userId = "d0a84e2a-14d9-4824-9b2f-764bc5f22f77";
+      if (token && token.startsWith("mock-token-")) {
+        userId = token.replace("mock-token-", "");
+      }
       req.user = {
-        id: "d0a84e2a-14d9-4824-9b2f-764bc5f22f77",
+        id: userId,
         email: "demo@aarogya.in",
         role: "authenticated"
       };

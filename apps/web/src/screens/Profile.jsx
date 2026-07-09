@@ -106,6 +106,10 @@ export function Profile({ onReset, onReplayTour }) {
             
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", fontSize: "14px" }}>
               <div>
+                <span style={{ color: "#6B685E", display: "block", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em" }}>Name</span>
+                <strong>{targets.name || "—"}</strong>
+              </div>
+              <div>
                 <span style={{ color: "#6B685E", display: "block", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em" }}>Diet</span>
                 <strong style={{ textTransform: "capitalize" }}>{diet.replace("_", " ")}</strong>
               </div>

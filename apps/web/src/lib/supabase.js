@@ -27,11 +27,18 @@ export async function bootstrapSession() {
     console.warn("Aarogya: Running in client MOCK auth mode.");
     // Simulate a brief loading state for UX testing
     await new Promise((r) => setTimeout(r, 400));
+
+    let mockUserId = localStorage.getItem("aarogya_mock_user_id");
+    if (!mockUserId) {
+      mockUserId = "usr_" + Math.random().toString(36).substring(2, 15) + "_" + Date.now();
+      localStorage.setItem("aarogya_mock_user_id", mockUserId);
+    }
+
     return {
       session: {
-        access_token: "mock-token-123",
+        access_token: `mock-token-${mockUserId}`,
         user: {
-          id: "d0a84e2a-14d9-4824-9b2f-764bc5f22f77",
+          id: mockUserId,
           email: "demo@aarogya.in"
         }
       }

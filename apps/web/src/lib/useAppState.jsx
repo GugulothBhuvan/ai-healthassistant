@@ -73,7 +73,11 @@ export function AppStateProvider({ children }) {
           }));
         setActivityLogs(activities);
       }
-      if (home.name) setUserName(home.name);
+      if (home.targets && home.targets.name) {
+        setUserName(home.targets.name);
+      } else if (home.name) {
+        setUserName(home.name);
+      }
 
       // Hydrate kitchen if available
       if (home.kitchen) setKitchen(home.kitchen);
